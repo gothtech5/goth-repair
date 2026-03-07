@@ -1,10 +1,9 @@
 import Image from "next/image"
-import Link from "next/link"
+import { BOOKING_URL } from "@/data/devices"
 
 const SERVICES = [
   {
     title: "iPhone Repair",
-    param: "iphone",
     image: "/images/iphone.png",
     description:
       "Screen replacement, battery swap, charging port, camera, and more.",
@@ -12,7 +11,6 @@ const SERVICES = [
   },
   {
     title: "iPad Repair",
-    param: "ipad",
     image: "/images/ipad.png",
     description:
       "Cracked screens, battery issues, and port repairs for all iPad models.",
@@ -20,7 +18,6 @@ const SERVICES = [
   },
   {
     title: "Apple Watch Repair",
-    param: "apple-watch",
     image: "/images/apple-watch.png",
     description:
       "Screen repair, battery replacement, and diagnostics for Apple Watch.",
@@ -28,7 +25,6 @@ const SERVICES = [
   },
   {
     title: "Mac Repair",
-    param: "computer",
     image: "/images/computer.png",
     description:
       "Screen repair, battery replacement, keyboard, and software fixes for MacBooks.",
@@ -45,9 +41,11 @@ export function ServicesOverview() {
         </h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {SERVICES.map((service) => (
-            <Link
-              key={service.param}
-              href={`/book?device=${service.param}`}
+            <a
+              key={service.title}
+              href={BOOKING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="group relative overflow-hidden rounded-xl border border-border-light bg-surface p-6 md:p-8"
             >
               {service.image && (
@@ -75,7 +73,7 @@ export function ServicesOverview() {
               <p className="mt-5 text-sm font-medium text-accent group-hover:underline">
                 Book now
               </p>
-            </Link>
+            </a>
           ))}
         </div>
       </div>

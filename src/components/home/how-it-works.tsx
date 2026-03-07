@@ -1,8 +1,11 @@
+import { BOOKING_URL } from "@/data/devices"
+
 const STEPS = [
   {
     number: "1",
     title: "Book Online",
     description: "Select your device, describe the issue, and pick a time that works.",
+    href: BOOKING_URL,
   },
   {
     number: "2",
@@ -24,17 +27,29 @@ export function HowItWorks() {
           How it works
         </h2>
         <div className="mt-12 grid gap-8 sm:grid-cols-3">
-          {STEPS.map((step) => (
-            <div key={step.number} className="text-center">
-              <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-accent text-lg font-semibold text-white">
-                {step.number}
+          {STEPS.map((step) => {
+            const content = (
+              <>
+                <div className="mx-auto flex size-12 items-center justify-center rounded-lg bg-accent text-lg font-semibold text-white">
+                  {step.number}
+                </div>
+                <h3 className="mt-4 text-lg font-medium">{step.title}</h3>
+                <p className="mt-2 text-sm text-text-secondary text-pretty">
+                  {step.description}
+                </p>
+              </>
+            )
+
+            return "href" in step ? (
+              <a key={step.number} href={step.href} target="_blank" rel="noopener noreferrer" className="text-center hover:opacity-80">
+                {content}
+              </a>
+            ) : (
+              <div key={step.number} className="text-center">
+                {content}
               </div>
-              <h3 className="mt-4 text-lg font-medium">{step.title}</h3>
-              <p className="mt-2 text-sm text-text-secondary text-pretty">
-                {step.description}
-              </p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

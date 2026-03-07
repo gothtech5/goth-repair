@@ -1,14 +1,14 @@
 "use client"
 
-import Link from "next/link"
 import { CheckCircle } from "lucide-react"
+import { BOOKING_URL } from "@/data/devices"
 
 const SERVICES = [
   { title: "Walk-In Repair", subtitle: "no appointment needed" },
-  { title: "Screen Replacement", subtitle: "iPhone & iPad", linkText: "See pricing", href: "/book" },
-  { title: "Battery Service", subtitle: "same-day swap", linkText: "Book now", href: "/book" },
-  { title: "Diagnostics", subtitle: "free assessment", linkText: "Schedule", href: "/book" },
-  { title: "Data Recovery", subtitle: "by consultation", linkText: "Learn more", href: "/book" },
+  { title: "Screen Replacement", subtitle: "iPhone & iPad", linkText: "See pricing" },
+  { title: "Battery Service", subtitle: "same-day swap", linkText: "Book now" },
+  { title: "Diagnostics", subtitle: "free assessment", linkText: "Schedule" },
+  { title: "Data Recovery", subtitle: "by consultation", linkText: "Learn more" },
 ] as const
 
 function getOpenUntil(): string {
@@ -46,20 +46,22 @@ export function Hero() {
               </div>
               <p className="text-xs text-text-tertiary">Available</p>
               {"linkText" in service && (
-                <Link href={service.href} className="text-sm text-accent hover:text-accent-hover hover:underline">
-                  {service.linkText} ›
-                </Link>
+                <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="text-sm text-accent hover:text-accent-hover hover:underline">
+                  {service.linkText} &rsaquo;
+                </a>
               )}
             </div>
           ))}
         </div>
         <div className="mt-6 text-center">
-          <Link
-            href="/book"
+          <a
+            href={BOOKING_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
           >
             Book a Repair
-          </Link>
+          </a>
         </div>
       </div>
     </section>

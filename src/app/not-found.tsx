@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { BOOKING_URL } from "@/data/devices"
 
 export default function NotFound() {
   return (
@@ -17,12 +18,14 @@ export default function NotFound() {
         >
           Go Home
         </Link>
-        <Link
-          href="/book"
+        <a
+          href={BOOKING_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           className="rounded-lg border border-border px-5 py-2.5 text-sm font-medium hover:bg-surface-secondary"
         >
           Book a Repair
-        </Link>
+        </a>
       </div>
     </div>
   )

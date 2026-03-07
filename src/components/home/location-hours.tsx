@@ -35,12 +35,11 @@ export function LocationHours() {
               </tbody>
             </table>
           </div>
-          <div className="overflow-hidden rounded-xl border border-border-light">
+          <div className="min-h-[300px] overflow-hidden rounded-xl border border-border-light">
             <iframe
               title="GothTech location"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2823.0!2d-93.2814591!3d44.9484517!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x52b333a4ebdf80e3%3A0xd7c1f279d9208b88!2sGothTech%3A%20Expert%20Repair%20Services%20for%20Phones%20and%20iPads.!5e0!3m2!1sen!2sus!4v1"
-              width="100%"
-              height="300"
+              className="size-full"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
