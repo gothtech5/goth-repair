@@ -12,7 +12,15 @@ export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
   const currentIndex = STEPS.indexOf(currentStep)
 
   return (
-    <nav className="mx-auto flex max-w-xl items-center justify-between" aria-label="Booking progress">
+    <nav
+      className="mx-auto flex max-w-xl items-center justify-between"
+      aria-label="Booking progress"
+      role="progressbar"
+      aria-valuenow={currentIndex + 1}
+      aria-valuemin={1}
+      aria-valuemax={STEPS.length}
+      aria-valuetext={`Step ${currentIndex + 1} of ${STEPS.length}: ${STEP_LABELS[currentStep]}`}
+    >
       {STEPS.map((step, i) => {
         const isCompleted = i < currentIndex
         const isCurrent = i === currentIndex
@@ -25,6 +33,7 @@ export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
                 type="button"
                 disabled={!isClickable}
                 onClick={() => isClickable && onStepClick(step)}
+                aria-label={`${STEP_LABELS[step]}${isCompleted ? " (completed)" : isCurrent ? " (current)" : ""}`}
                 className={cn(
                   "flex size-8 items-center justify-center rounded-full text-xs font-medium transition-colors",
                   isCompleted && "bg-accent text-white cursor-pointer",

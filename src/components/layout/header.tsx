@@ -26,6 +26,12 @@ export function Header() {
           >
             Location
           </Link>
+          <a
+            href="tel:+16129878107"
+            className="text-sm font-bold text-accent hover:text-accent-hover"
+          >
+            (612)-987-8107
+          </a>
           <Link
             href="/book"
             className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"

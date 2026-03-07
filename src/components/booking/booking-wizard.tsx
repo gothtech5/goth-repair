@@ -1,12 +1,14 @@
 "use client"
 
-import { useReducer, useEffect } from "react"
+import { useReducer, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { DEVICE_MODELS, REPAIR_ISSUES } from "@/data/devices"
 import {
   bookingReducer,
   INITIAL_STATE,
   STEPS,
   type BookingStep,
+  type ContactInfo,
   type DeviceType,
 } from "@/types/booking"
 import { ProgressBar } from "./progress-bar"
@@ -22,6 +24,8 @@ const VALID_DEVICES: DeviceType[] = ["iphone", "ipad", "apple-watch", "computer"
 export function BookingWizard() {
   const searchParams = useSearchParams()
   const [state, dispatch] = useReducer(bookingReducer, INITIAL_STATE)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
     const device = searchParams.get("device") as DeviceType | null
@@ -43,6 +47,40 @@ export function BookingWizard() {
       for (let i = currentIndex; i > targetIndex; i--) {
         dispatch({ type: "GO_BACK" })
       }
+    }
+  }
+
+  async function handleBookingSubmit(contact: ContactInfo) {
+    setSubmitting(true)
+    setSubmitError(null)
+
+    const model = DEVICE_MODELS.find((m) => m.id === state.modelId)
+    const issue = REPAIR_ISSUES.find((i) => i.id === state.issueId)
+
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deviceType: state.deviceType,
+          modelName: model?.name ?? "",
+          issueName: issue?.name ?? "",
+          date: state.date,
+          timeSlot: state.timeSlot,
+          contact,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error ?? "Booking failed")
+      }
+
+      dispatch({ type: "SET_CONTACT", payload: contact })
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.")
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -86,10 +124,10 @@ export function BookingWizard() {
         {state.step === "contact" && (
           <ContactStep
             state={state}
-            onSubmit={(contact) =>
-              dispatch({ type: "SET_CONTACT", payload: contact })
-            }
+            onSubmit={handleBookingSubmit}
             onBack={() => dispatch({ type: "GO_BACK" })}
+            submitting={submitting}
+            submitError={submitError}
           />
         )}
         {state.step === "confirmation" && (

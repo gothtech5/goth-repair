@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gothtech.repair/sitemap.xml

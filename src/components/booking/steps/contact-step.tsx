@@ -8,9 +8,11 @@ interface ContactStepProps {
   state: BookingState
   onSubmit: (contact: ContactInfo) => void
   onBack: () => void
+  submitting?: boolean
+  submitError?: string | null
 }
 
-export function ContactStep({ state, onSubmit, onBack }: ContactStepProps) {
+export function ContactStep({ state, onSubmit, onBack, submitting, submitError }: ContactStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [live, setLive] = useState({ firstName: "", lastName: "", phone: "", email: "" })
   const formRef = useRef<HTMLFormElement>(null)
@@ -42,6 +44,8 @@ export function ContactStep({ state, onSubmit, onBack }: ContactStepProps) {
     if (!firstName) newErrors.firstName = "First name is required"
     if (!lastName) newErrors.lastName = "Last name is required"
     if (!phone) newErrors.phone = "Phone number is required"
+    else if (!/^\+?1?\s*\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/.test(phone))
+      newErrors.phone = "Enter a valid phone number"
     if (!email) newErrors.email = "Email is required"
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.email = "Enter a valid email address"
@@ -75,11 +79,11 @@ export function ContactStep({ state, onSubmit, onBack }: ContactStepProps) {
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_300px]">
         <form ref={formRef} onSubmit={handleSubmit} onInput={handleInput} className="space-y-5">
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field name="firstName" label="First name" error={errors.firstName} />
-            <Field name="lastName" label="Last name" error={errors.lastName} />
+            <Field name="firstName" label="First name" required error={errors.firstName} />
+            <Field name="lastName" label="Last name" required error={errors.lastName} />
           </div>
-          <Field name="phone" label="Phone number" type="tel" error={errors.phone} />
-          <Field name="email" label="Email" type="email" error={errors.email} />
+          <Field name="phone" label="Phone number" type="tel" required error={errors.phone} />
+          <Field name="email" label="Email" type="email" required error={errors.email} />
           <div>
             <label htmlFor="notes" className="block text-sm font-medium">
               Additional notes
@@ -91,11 +95,15 @@ export function ContactStep({ state, onSubmit, onBack }: ContactStepProps) {
               className="mt-1.5 w-full rounded-lg border border-border-light px-3 py-2.5 text-sm outline-none focus:border-accent"
             />
           </div>
+          {submitError && (
+            <p className="text-sm text-destructive" role="alert">{submitError}</p>
+          )}
           <button
             type="submit"
-            className="w-full rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white hover:bg-accent-hover"
+            disabled={submitting}
+            className="w-full rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
           >
-            Confirm Booking
+            {submitting ? "Submitting..." : "Confirm Booking"}
           </button>
         </form>
 
@@ -123,25 +131,31 @@ function Field({
   name,
   label,
   type = "text",
+  required = false,
   error,
 }: {
   name: string
   label: string
   type?: string
+  required?: boolean
   error?: string
 }) {
+  const errorId = `${name}-error`
   return (
     <div>
       <label htmlFor={name} className="block text-sm font-medium">
-        {label}
+        {label}{required && <span className="text-destructive"> *</span>}
       </label>
       <input
         id={name}
         name={name}
         type={type}
+        required={required}
+        aria-describedby={error ? errorId : undefined}
+        aria-invalid={error ? true : undefined}
         className="mt-1.5 w-full rounded-lg border border-border-light px-3 py-2.5 text-sm outline-none focus:border-accent"
       />
-      {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
+      {error && <p id={errorId} className="mt-1 text-sm text-destructive" role="alert">{error}</p>}
     </div>
   )
 }
