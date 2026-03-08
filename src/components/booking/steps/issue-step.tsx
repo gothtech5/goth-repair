@@ -69,13 +69,18 @@ export function IssueStep({ category, onSubmit, onBack }: IssueStepProps) {
   const canContinue = selected.size > 0
 
   return (
-    <div>
+    <div className="pb-24">
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
         What&apos;s wrong with it?
       </h2>
-      <p className="mt-2 text-text-secondary">
-        Select all that apply — we&apos;ll diagnose everything at drop-off.
-      </p>
+      <div className="mt-2 flex items-center gap-2">
+        <span className="inline-flex items-center rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
+          Select multiple
+        </span>
+        <p className="text-text-secondary">
+          Tap everything that applies — we&apos;ll handle it all in one visit.
+        </p>
+      </div>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {issues.map((issue) => (
           <SelectionCard
@@ -121,29 +126,38 @@ export function IssueStep({ category, onSubmit, onBack }: IssueStepProps) {
         />
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-sm text-accent hover:underline"
-        >
-          &larr; Back
-        </button>
-        <button
-          type="button"
-          disabled={!canContinue}
-          onClick={() => onSubmit([...selected], description)}
-          className="rounded-xl bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-40"
-        >
-          Continue &rarr;
-        </button>
-      </div>
-
       <div className="mt-6 text-center">
         <p className="text-sm text-text-tertiary">
           Not sure what&apos;s wrong? Choose &ldquo;Something Else&rdquo; — we&apos;ll diagnose it
           at drop-off for free.
         </p>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border-light bg-surface/95 px-6 py-4 backdrop-blur-sm safe-area-inset-bottom">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-sm text-accent hover:underline"
+          >
+            &larr; Back
+          </button>
+          <div className="flex items-center gap-3">
+            {selected.size > 0 && (
+              <span className="text-sm text-text-secondary">
+                {selected.size} {selected.size === 1 ? "issue" : "issues"} selected
+              </span>
+            )}
+            <button
+              type="button"
+              disabled={!canContinue}
+              onClick={() => onSubmit([...selected], description)}
+              className="rounded-xl bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-40"
+            >
+              Continue &rarr;
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
