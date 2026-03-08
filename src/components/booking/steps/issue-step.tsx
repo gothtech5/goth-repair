@@ -70,13 +70,6 @@ export function IssueStep({ category, onSubmit, onBack }: IssueStepProps) {
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={onBack}
-        className="mb-4 text-sm text-accent hover:underline"
-      >
-        &larr; Back
-      </button>
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
         What&apos;s wrong with it?
       </h2>
@@ -128,14 +121,21 @@ export function IssueStep({ category, onSubmit, onBack }: IssueStepProps) {
         />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onBack}
+          className="text-sm text-accent hover:underline"
+        >
+          &larr; Back
+        </button>
         <button
           type="button"
           disabled={!canContinue}
           onClick={() => onSubmit([...selected], description)}
           className="rounded-xl bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-40"
         >
-          Continue
+          Continue &rarr;
         </button>
       </div>
 

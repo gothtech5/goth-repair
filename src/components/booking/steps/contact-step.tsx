@@ -47,13 +47,6 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={onBack}
-        className="mb-4 text-sm text-accent hover:underline"
-      >
-        &larr; Back
-      </button>
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
         Last step — enter your contact info
       </h2>
@@ -118,13 +111,22 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
         {submitError && (
           <p className="text-sm text-destructive" role="alert">{submitError}</p>
         )}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
-        >
-          {submitting ? "Submitting..." : "Confirm Booking"}
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-sm text-accent hover:underline"
+          >
+            &larr; Back
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-lg bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+          >
+            {submitting ? "Submitting..." : "Confirm Booking"}
+          </button>
+        </div>
       </form>
     </div>
   )

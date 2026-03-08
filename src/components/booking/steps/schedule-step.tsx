@@ -127,13 +127,6 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={onBack}
-        className="mb-4 text-sm text-accent hover:underline"
-      >
-        &larr; Back
-      </button>
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
         {selectedDate ? "Pick a time" : "Pick a date"}
       </h2>
@@ -255,18 +248,39 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
               <TimeSlotGroup label="Afternoon" slots={afternoonSlots} selectedTime={selectedTime} onSelect={setSelectedTime} />
 
               {selectedTime && (
-                <button
-                  type="button"
-                  onClick={() => onSelect(selectedDate, selectedTime)}
-                  className="w-full rounded-xl bg-accent px-6 py-3 text-sm font-medium text-white hover:bg-accent-hover"
-                >
-                  Continue
-                </button>
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="text-sm text-accent hover:underline"
+                  >
+                    &larr; Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(selectedDate, selectedTime)}
+                    className="rounded-xl bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover"
+                  >
+                    Continue &rarr;
+                  </button>
+                </div>
               )}
             </div>
           )}
         </div>
       </div>
+
+      {!selectedTime && (
+        <div className="mt-8">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-sm text-accent hover:underline"
+          >
+            &larr; Back
+          </button>
+        </div>
+      )}
     </div>
   )
 }
