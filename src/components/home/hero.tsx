@@ -1,7 +1,7 @@
 "use client"
 
+import Link from "next/link"
 import { CheckCircle } from "lucide-react"
-import { BOOKING_URL } from "@/data/devices"
 
 const SERVICES = [
   { title: "Walk-In Repair", subtitle: "no appointment needed" },
@@ -46,22 +46,20 @@ export function Hero() {
               </div>
               <p className="text-xs text-text-tertiary">Available</p>
               {"linkText" in service && (
-                <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="text-sm text-accent hover:text-accent-hover hover:underline">
+                <Link href="/book" className="text-sm text-accent hover:text-accent-hover hover:underline">
                   {service.linkText} &rsaquo;
-                </a>
+                </Link>
               )}
             </div>
           ))}
         </div>
         <div className="mt-6 text-center">
-          <a
-            href={BOOKING_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/book"
             className="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
           >
             Book a Repair
-          </a>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { BOOKING_URL } from "@/data/devices"
 
 export function Header() {
   return (
@@ -33,14 +32,12 @@ export function Header() {
           >
             (612)-987-8107
           </a>
-          <a
-            href={BOOKING_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/book"
             className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
           >
             Book a Repair
-          </a>
+          </Link>
         </div>
       </nav>
     </header>

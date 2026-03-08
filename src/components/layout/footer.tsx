@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { BOOKING_URL } from "@/data/devices"
 
 export function Footer() {
   return (
@@ -22,9 +21,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="hover:text-text-primary">
+                <Link href="/book" className="hover:text-text-primary">
                   Book a Repair
-                </a>
+                </Link>
               </li>
               <li>
                 <Link href="/#location" className="hover:text-text-primary">

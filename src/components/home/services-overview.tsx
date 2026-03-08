@@ -1,10 +1,11 @@
 import Image from "next/image"
-import { BOOKING_URL } from "@/data/devices"
+import Link from "next/link"
 
 const SERVICES = [
   {
     title: "iPhone Repair",
     image: "/images/iphone.png",
+    device: "iphone",
     description:
       "Screen replacement, battery swap, charging port, camera, and more.",
     repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Back Glass"],
@@ -12,6 +13,7 @@ const SERVICES = [
   {
     title: "iPad Repair",
     image: "/images/ipad.png",
+    device: "ipad",
     description:
       "Cracked screens, battery issues, and port repairs for all iPad models.",
     repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Software Issues"],
@@ -19,6 +21,7 @@ const SERVICES = [
   {
     title: "Apple Watch Repair",
     image: "/images/apple-watch.png",
+    device: "apple-watch",
     description:
       "Screen repair, battery replacement, and diagnostics for Apple Watch.",
     repairs: ["Screen Repair", "Battery Replacement", "Diagnostics"],
@@ -26,6 +29,7 @@ const SERVICES = [
   {
     title: "Mac Repair",
     image: "/images/computer.png",
+    device: "computer",
     description:
       "Screen repair, battery replacement, keyboard, and software fixes for MacBooks.",
     repairs: ["Screen Repair", "Battery Replacement", "Keyboard Repair", "Software Issues"],
@@ -41,11 +45,9 @@ export function ServicesOverview() {
         </h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {SERVICES.map((service) => (
-            <a
+            <Link
               key={service.title}
-              href={BOOKING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`/book?device=${service.device}`}
               className="group relative overflow-hidden rounded-xl border border-border-light bg-surface p-6 md:p-8"
             >
               {service.image && (
@@ -73,7 +75,7 @@ export function ServicesOverview() {
               <p className="mt-5 text-sm font-medium text-accent group-hover:underline">
                 Book now
               </p>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

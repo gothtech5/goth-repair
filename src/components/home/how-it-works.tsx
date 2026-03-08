@@ -1,11 +1,11 @@
-import { BOOKING_URL } from "@/data/devices"
+import Link from "next/link"
 
 const STEPS = [
   {
     number: "1",
     title: "Book Online",
     description: "Select your device, describe the issue, and pick a time that works.",
-    href: BOOKING_URL,
+    href: "/book",
   },
   {
     number: "2",
@@ -41,9 +41,9 @@ export function HowItWorks() {
             )
 
             return "href" in step ? (
-              <a key={step.number} href={step.href} target="_blank" rel="noopener noreferrer" className="text-center hover:opacity-80">
+              <Link key={step.number} href={step.href} className="text-center hover:opacity-80">
                 {content}
-              </a>
+              </Link>
             ) : (
               <div key={step.number} className="text-center">
                 {content}
