@@ -13,16 +13,18 @@ interface ConfirmationEmailParams {
   email: string
   date: string
   timeSlot: string
-  deviceType: string
+  category: string
+  brand: string
   modelName: string
-  issueName: string
+  issues: string
 }
 
 export async function sendConfirmationEmail(params: ConfirmationEmailParams): Promise<void> {
-  const { eventId, customerName, email, date, timeSlot, deviceType, modelName, issueName } = params
+  const { eventId, customerName, email, date, timeSlot, brand, modelName, issues } = params
 
   const cancelToken = createCancelToken(eventId)
   const cancelUrl = `https://gothtech.repair/cancel?token=${encodeURIComponent(cancelToken)}`
+  const deviceDisplay = brand ? `${brand} ${modelName}` : modelName
 
   const subject = `Your GothTech repair appointment — ${date} at ${timeSlot}`
 
@@ -38,11 +40,11 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Device</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${deviceType} — ${modelName}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${deviceDisplay}</td>
         </tr>
         <tr>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Issue</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${issueName}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Issues</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${issues}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Date</td>
@@ -71,8 +73,8 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
     "Your appointment is confirmed",
     "",
     `Name: ${customerName}`,
-    `Device: ${deviceType} — ${modelName}`,
-    `Issue: ${issueName}`,
+    `Device: ${deviceDisplay}`,
+    `Issues: ${issues}`,
     `Date: ${date}`,
     `Time: ${timeSlot}`,
     "",
@@ -83,7 +85,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
 
   const resend = getResendClient()
   await resend.emails.send({
-    from: "bookings@gothtech.repair",
+    from: "bookings@gothtechnology.com",
     to: email,
     subject,
     html,
