@@ -30,6 +30,16 @@ export function Footer() {
                   Location
                 </Link>
               </li>
+              <li>
+                <Link href="/privacy" className="hover:text-text-primary">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="hover:text-text-primary">
+                  Terms of Service
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -41,7 +51,21 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-10 border-t border-border-light pt-6 text-center text-sm text-text-tertiary">
-          &copy; {new Date().getFullYear()} GothTech. All rights reserved.
+          <p>
+            &copy; {new Date().getFullYear()} GothTech. All rights reserved.
+            This website and its content are owned and operated by GothTech.
+            Unauthorized reproduction or distribution of any material from this
+            site is prohibited.
+          </p>
+          <p className="mt-2">
+            <Link href="/privacy" className="hover:text-text-secondary">
+              Privacy Policy
+            </Link>
+            <span className="mx-2">&middot;</span>
+            <Link href="/terms" className="hover:text-text-secondary">
+              Terms of Service
+            </Link>
+          </p>
         </div>
       </div>
     </footer>
