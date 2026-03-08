@@ -1,4 +1,4 @@
-export type DeviceType = "iphone" | "ipad" | "apple-watch" | "computer"
+export type DeviceCategory = "phone" | "tablet" | "computer"
 
 export type BookingStep =
   | "device"
@@ -14,24 +14,30 @@ export interface ContactInfo {
   phone: string
   email: string
   notes: string
+  agreedToTerms: boolean
+  marketingOptIn: boolean
 }
 
 export interface BookingState {
   step: BookingStep
-  deviceType: DeviceType | null
+  category: DeviceCategory | null
+  brand: string | null
   modelId: string | null
-  issueId: string | null
+  issues: string[]
+  issueDescription: string
   date: string | null
   timeSlot: string | null
   contact: ContactInfo | null
 }
 
 export type BookingAction =
-  | { type: "SET_DEVICE"; payload: DeviceType }
+  | { type: "SET_CATEGORY"; payload: DeviceCategory }
+  | { type: "SET_BRAND"; payload: string }
   | { type: "SET_MODEL"; payload: string }
-  | { type: "SET_ISSUE"; payload: string }
+  | { type: "SET_ISSUES"; payload: { issues: string[]; description: string } }
   | { type: "SET_SCHEDULE"; payload: { date: string; timeSlot: string } }
   | { type: "SET_CONTACT"; payload: ContactInfo }
+  | { type: "GO_TO_STEP"; payload: BookingStep }
   | { type: "GO_BACK" }
   | { type: "RESET" }
 
@@ -46,7 +52,7 @@ export const STEPS: BookingStep[] = [
 
 export const STEP_LABELS: Record<BookingStep, string> = {
   device: "Device",
-  model: "Model",
+  model: "Details",
   issue: "Issue",
   schedule: "Schedule",
   contact: "Contact",
@@ -55,9 +61,11 @@ export const STEP_LABELS: Record<BookingStep, string> = {
 
 export const INITIAL_STATE: BookingState = {
   step: "device",
-  deviceType: null,
+  category: null,
+  brand: null,
   modelId: null,
-  issueId: null,
+  issues: [],
+  issueDescription: "",
   date: null,
   timeSlot: null,
   contact: null,
@@ -68,16 +76,38 @@ export function bookingReducer(
   action: BookingAction,
 ): BookingState {
   switch (action.type) {
-    case "SET_DEVICE":
-      return { ...state, step: "model", deviceType: action.payload, modelId: null, issueId: null }
+    case "SET_CATEGORY":
+      return {
+        ...state,
+        step: "model",
+        category: action.payload,
+        brand: null,
+        modelId: null,
+        issues: [],
+        issueDescription: "",
+      }
+    case "SET_BRAND":
+      return { ...state, brand: action.payload, modelId: null }
     case "SET_MODEL":
-      return { ...state, step: "issue", modelId: action.payload, issueId: null }
-    case "SET_ISSUE":
-      return { ...state, step: "schedule", issueId: action.payload }
+      return { ...state, step: "issue", modelId: action.payload }
+    case "SET_ISSUES":
+      return {
+        ...state,
+        step: "schedule",
+        issues: action.payload.issues,
+        issueDescription: action.payload.description,
+      }
     case "SET_SCHEDULE":
-      return { ...state, step: "contact", date: action.payload.date, timeSlot: action.payload.timeSlot }
+      return {
+        ...state,
+        step: "contact",
+        date: action.payload.date,
+        timeSlot: action.payload.timeSlot,
+      }
     case "SET_CONTACT":
       return { ...state, step: "confirmation", contact: action.payload }
+    case "GO_TO_STEP":
+      return { ...state, step: action.payload }
     case "GO_BACK": {
       const currentIndex = STEPS.indexOf(state.step)
       if (currentIndex <= 0) return state

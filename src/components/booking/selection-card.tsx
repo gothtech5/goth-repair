@@ -27,11 +27,22 @@ export function SelectionCard({
       <button
         type="button"
         onClick={onClick}
-        className="group flex w-full flex-col items-center rounded-3xl border border-border-light bg-surface p-6 text-center transition-all duration-200 ease-out hover:scale-[1.02] hover:border-accent hover:shadow-lg"
+        className={cn(
+          "group flex w-full flex-col items-center rounded-3xl border bg-surface p-6 text-center transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-lg",
+          selected
+            ? "border-accent ring-2 ring-accent/20"
+            : "border-border-light hover:border-accent",
+        )}
       >
         {icon && (
-          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-surface-secondary transition-colors duration-200 group-hover:bg-accent-light">
-            <div className="text-text-secondary transition-colors duration-200 group-hover:text-accent">
+          <div className={cn(
+            "mb-4 flex size-16 items-center justify-center rounded-full transition-colors duration-200",
+            selected ? "bg-accent-light" : "bg-surface-secondary group-hover:bg-accent-light",
+          )}>
+            <div className={cn(
+              "transition-colors duration-200",
+              selected ? "text-accent" : "text-text-secondary group-hover:text-accent",
+            )}>
               {icon}
             </div>
           </div>

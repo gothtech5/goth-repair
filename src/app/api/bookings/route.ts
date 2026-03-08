@@ -3,9 +3,11 @@ import { getCalendarClient } from "@/lib/google-calendar"
 import { sendConfirmationEmail } from "@/lib/send-confirmation-email"
 
 interface BookingPayload {
-  deviceType: string
+  category: string
+  brand: string
   modelName: string
-  issueName: string
+  issues: string[]
+  issueDescription: string
   date: string
   timeSlot: string
   contact: {
@@ -14,6 +16,8 @@ interface BookingPayload {
     phone: string
     email: string
     notes: string
+    agreedToTerms: boolean
+    marketingOptIn: boolean
   }
 }
 
@@ -21,9 +25,10 @@ function validatePayload(body: unknown): body is BookingPayload {
   if (!body || typeof body !== "object") return false
   const b = body as Record<string, unknown>
 
-  if (typeof b.deviceType !== "string" || !b.deviceType) return false
+  if (typeof b.category !== "string" || !b.category) return false
+  if (typeof b.brand !== "string") return false
   if (typeof b.modelName !== "string" || !b.modelName) return false
-  if (typeof b.issueName !== "string" || !b.issueName) return false
+  if (!Array.isArray(b.issues) || b.issues.length === 0) return false
   if (typeof b.date !== "string" || !b.date) return false
   if (typeof b.timeSlot !== "string" || !b.timeSlot) return false
 
@@ -35,6 +40,7 @@ function validatePayload(body: unknown): body is BookingPayload {
   if (typeof contact.lastName !== "string" || !contact.lastName.trim()) return false
   if (typeof contact.phone !== "string" || !contact.phone.trim()) return false
   if (typeof contact.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) return false
+  if (contact.agreedToTerms !== true) return false
 
   return true
 }
@@ -73,8 +79,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 })
   }
 
-  const { contact, modelName, issueName, date, timeSlot, deviceType } = body
+  const { contact, category, brand, modelName, issues, issueDescription, date, timeSlot } = body
   const customerName = `${contact.firstName} ${contact.lastName}`
+  const issuesText = issues.join(", ")
 
   let times: { start: string; end: string }
   try {
@@ -90,8 +97,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       `Customer: ${customerName}`,
       `Phone: ${contact.phone}`,
       `Email: ${contact.email}`,
-      `Device: ${deviceType} — ${modelName}`,
-      `Issue: ${issueName}`,
+      `Category: ${category}`,
+      `Device: ${brand} ${modelName}`,
+      `Issues: ${issuesText}`,
+      issueDescription ? `Description: ${issueDescription}` : "",
       contact.notes ? `Notes: ${contact.notes}` : "",
     ].filter(Boolean).join("\n")
 
@@ -99,7 +108,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       calendarId,
       sendUpdates: "all",
       requestBody: {
-        summary: `Repair: ${modelName} — ${issueName} (${customerName})`,
+        summary: `Repair: ${brand} ${modelName} — ${issuesText} (${customerName})`,
         description,
         start: {
           dateTime: times.start,
@@ -121,9 +130,10 @@ export async function POST(request: Request): Promise<NextResponse> {
           email: contact.email,
           date,
           timeSlot,
-          deviceType,
+          category,
+          brand,
           modelName,
-          issueName,
+          issues: issuesText,
         })
       } catch (emailErr) {
         console.error("Failed to send confirmation email:", emailErr)

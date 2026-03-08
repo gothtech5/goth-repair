@@ -3,36 +3,28 @@ import Link from "next/link"
 
 const SERVICES = [
   {
-    title: "iPhone Repair",
+    title: "Phone Repair",
     image: "/images/iphone.png",
-    device: "iphone",
+    category: "phone",
     description:
-      "Screen replacement, battery swap, charging port, camera, and more.",
+      "Screen replacement, battery swap, charging port, camera, and more for iPhone, Samsung, Google Pixel, and OnePlus.",
     repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Back Glass"],
   },
   {
-    title: "iPad Repair",
+    title: "Tablet Repair",
     image: "/images/ipad.png",
-    device: "ipad",
+    category: "tablet",
     description:
-      "Cracked screens, battery issues, and port repairs for all iPad models.",
+      "Cracked screens, battery issues, and port repairs for iPad, Samsung Galaxy Tab, Amazon Fire, and more.",
     repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Software Issues"],
   },
   {
-    title: "Apple Watch Repair",
-    image: "/images/apple-watch.png",
-    device: "apple-watch",
-    description:
-      "Screen repair, battery replacement, and diagnostics for Apple Watch.",
-    repairs: ["Screen Repair", "Battery Replacement", "Diagnostics"],
-  },
-  {
-    title: "Mac Repair",
+    title: "Computer Repair",
     image: "/images/computer.png",
-    device: "computer",
+    category: "computer",
     description:
-      "Screen repair, battery replacement, keyboard, and software fixes for MacBooks.",
-    repairs: ["Screen Repair", "Battery Replacement", "Keyboard Repair", "Software Issues"],
+      "Screen repair, battery, keyboard, and software fixes for MacBooks, Dell, HP, Lenovo, and Asus.",
+    repairs: ["Screen Repair", "Battery Replacement", "Keyboard Repair", "Virus Removal"],
   },
 ] as const
 
@@ -43,11 +35,11 @@ export function ServicesOverview() {
         <h2 className="text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
           What we repair
         </h2>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((service) => (
             <Link
               key={service.title}
-              href={`/book?device=${service.device}`}
+              href={`/book?category=${service.category}`}
               className="group relative flex flex-col overflow-hidden rounded-xl border border-border-light bg-surface p-6 md:p-8"
             >
               {service.image && (

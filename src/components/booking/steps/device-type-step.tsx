@@ -1,18 +1,17 @@
 "use client"
 
 import Image from "next/image"
-import { DEVICE_TYPES } from "@/data/devices"
-import type { DeviceType } from "@/types/booking"
+import { DEVICE_CATEGORIES } from "@/data/devices"
+import type { DeviceCategory } from "@/types/booking"
 
-const DEVICE_IMAGES: Partial<Record<DeviceType, string>> = {
-  iphone: "/images/iphone.png",
-  ipad: "/images/ipad.png",
-  "apple-watch": "/images/apple-watch.png",
+const CATEGORY_IMAGES: Partial<Record<DeviceCategory, string>> = {
+  phone: "/images/iphone.png",
+  tablet: "/images/ipad.png",
   computer: "/images/computer.png",
 }
 
 interface DeviceTypeStepProps {
-  onSelect: (deviceType: DeviceType) => void
+  onSelect: (category: DeviceCategory) => void
 }
 
 export function DeviceTypeStep({ onSelect }: DeviceTypeStepProps) {
@@ -22,32 +21,32 @@ export function DeviceTypeStep({ onSelect }: DeviceTypeStepProps) {
         What device needs repair?
       </h2>
       <p className="mt-2 text-text-secondary">
-        Select your device type to get started.
+        Get a free consultation and fast repair.
       </p>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {DEVICE_TYPES.map((device) => {
-          const imageSrc = DEVICE_IMAGES[device.id]
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {DEVICE_CATEGORIES.map((category) => {
+          const imageSrc = CATEGORY_IMAGES[category.id]
           return (
             <button
-              key={device.id}
+              key={category.id}
               type="button"
-              onClick={() => onSelect(device.id)}
+              onClick={() => onSelect(category.id)}
               className="w-full rounded-xl border border-border-light bg-surface p-5 text-left transition-colors hover:border-border"
             >
               {imageSrc && (
                 <div className="mb-4 flex justify-center">
                   <Image
                     src={imageSrc}
-                    alt={device.name}
+                    alt={category.name}
                     width={200}
                     height={120}
                     className="h-[120px] w-auto object-contain"
                   />
                 </div>
               )}
-              <p className="font-medium">{device.name}</p>
+              <p className="font-medium">{category.name}</p>
               <p className="mt-1 text-sm text-text-secondary">
-                {device.description}
+                {category.description}
               </p>
             </button>
           )
