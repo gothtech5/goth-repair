@@ -1,9 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { ChevronLeft, ChevronRight, Clock } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, Clock, Loader2 } from "lucide-react"
 import { cn } from "@/lib/cn"
-import { getTimeSlots } from "@/data/devices"
+
+interface TimeSlot {
+  time: string
+  available: boolean
+}
 
 interface ScheduleStepProps {
   onSelect: (date: string, timeSlot: string) => void
@@ -40,13 +44,44 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
   const [viewMonth, setViewMonth] = useState(today.getMonth())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [slots, setSlots] = useState<TimeSlot[]>([])
+  const [loading, setLoading] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth)
   const firstDay = getFirstDayOfWeek(viewYear, viewMonth)
-  const timeSlots = getTimeSlots()
 
-  const morningSlots = timeSlots.filter((s) => s.time.includes("AM"))
-  const afternoonSlots = timeSlots.filter((s) => s.time.includes("PM"))
+  useEffect(() => {
+    if (!selectedDate) {
+      setSlots([])
+      return
+    }
+
+    let cancelled = false
+    setLoading(true)
+    setFetchError(null)
+    setSelectedTime(null)
+
+    fetch(`/api/bookings/availability?date=${selectedDate}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load availability")
+        return res.json()
+      })
+      .then((data: { slots: TimeSlot[] }) => {
+        if (!cancelled) setSlots(data.slots)
+      })
+      .catch((err) => {
+        if (!cancelled) setFetchError(err instanceof Error ? err.message : "Something went wrong")
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [selectedDate])
+
+  const morningSlots = slots.filter((s) => s.time.includes("AM"))
+  const afternoonSlots = slots.filter((s) => s.time.includes("PM"))
 
   function prevMonth() {
     if (viewMonth === 0) {
@@ -157,10 +192,7 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
                   key={day}
                   type="button"
                   disabled={disabled}
-                  onClick={() => {
-                    setSelectedDate(dateStr)
-                    setSelectedTime(null)
-                  }}
+                  onClick={() => setSelectedDate(dateStr)}
                   className={cn(
                     "relative mx-auto my-0.5 flex size-9 items-center justify-center rounded-full tabular-nums transition-colors",
                     disabled && "text-text-tertiary/40 cursor-not-allowed",
@@ -187,66 +219,40 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
             </div>
           )}
 
-          {selectedDate && (
+          {selectedDate && loading && (
+            <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-border-light py-16 text-center">
+              <Loader2 className="size-8 text-accent animate-spin" />
+              <p className="mt-3 text-sm text-text-tertiary">
+                Checking availability...
+              </p>
+            </div>
+          )}
+
+          {selectedDate && fetchError && (
+            <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-border-light py-16 text-center">
+              <p className="text-sm text-destructive">{fetchError}</p>
+              <button
+                type="button"
+                onClick={() => setSelectedDate(selectedDate)}
+                className="mt-3 text-sm text-accent hover:underline"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {selectedDate && !loading && !fetchError && slots.length > 0 && (
             <div className="space-y-5">
-              {selectedDate && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedDate(null)
-                    setSelectedTime(null)
-                  }}
-                  className="text-sm text-accent hover:underline lg:hidden"
-                >
-                  &larr; Change date
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setSelectedDate(null)}
+                className="text-sm text-accent hover:underline lg:hidden"
+              >
+                &larr; Change date
+              </button>
 
-              <div>
-                <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                  Morning
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {morningSlots.map((slot) => (
-                    <button
-                      key={slot.time}
-                      type="button"
-                      onClick={() => setSelectedTime(slot.time)}
-                      className={cn(
-                        "rounded-xl border py-2.5 text-sm tabular-nums transition-colors",
-                        selectedTime === slot.time
-                          ? "border-accent bg-accent text-white font-medium"
-                          : "border-border-light bg-surface hover:border-accent hover:text-accent",
-                      )}
-                    >
-                      {slot.time}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-text-tertiary">
-                  Afternoon
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {afternoonSlots.map((slot) => (
-                    <button
-                      key={slot.time}
-                      type="button"
-                      onClick={() => setSelectedTime(slot.time)}
-                      className={cn(
-                        "rounded-xl border py-2.5 text-sm tabular-nums transition-colors",
-                        selectedTime === slot.time
-                          ? "border-accent bg-accent text-white font-medium"
-                          : "border-border-light bg-surface hover:border-accent hover:text-accent",
-                      )}
-                    >
-                      {slot.time}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <TimeSlotGroup label="Morning" slots={morningSlots} selectedTime={selectedTime} onSelect={setSelectedTime} />
+              <TimeSlotGroup label="Afternoon" slots={afternoonSlots} selectedTime={selectedTime} onSelect={setSelectedTime} />
 
               {selectedTime && (
                 <button
@@ -260,6 +266,49 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
+
+function TimeSlotGroup({
+  label,
+  slots,
+  selectedTime,
+  onSelect,
+}: {
+  label: string
+  slots: TimeSlot[]
+  selectedTime: string | null
+  onSelect: (time: string) => void
+}) {
+  if (slots.length === 0) return null
+  const allTaken = slots.every((s) => !s.available)
+
+  return (
+    <div>
+      <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-text-tertiary">
+        {label}
+        {allTaken && <span className="ml-2 normal-case text-destructive">fully booked</span>}
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {slots.map((slot) => (
+          <button
+            key={slot.time}
+            type="button"
+            disabled={!slot.available}
+            onClick={() => onSelect(slot.time)}
+            className={cn(
+              "rounded-xl border py-2.5 text-sm tabular-nums transition-colors",
+              !slot.available && "border-border-light bg-surface-secondary text-text-tertiary/40 cursor-not-allowed line-through",
+              slot.available && selectedTime === slot.time
+                ? "border-accent bg-accent text-white font-medium"
+                : slot.available && "border-border-light bg-surface hover:border-accent hover:text-accent",
+            )}
+          >
+            {slot.time}
+          </button>
+        ))}
       </div>
     </div>
   )
