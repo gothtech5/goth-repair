@@ -26,26 +26,26 @@ export function HowItWorks() {
         <h2 className="text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
           How it works
         </h2>
-        <div className="mt-12 grid gap-8 sm:grid-cols-3">
+        <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {STEPS.map((step) => {
             const content = (
-              <>
-                <div className="mx-auto flex size-12 items-center justify-center rounded-lg bg-accent text-lg font-semibold text-white">
+              <div className="rounded-2xl border border-border-light bg-surface p-6 text-center">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-accent text-lg font-semibold text-white">
                   {step.number}
                 </div>
-                <h3 className="mt-4 text-lg font-medium">{step.title}</h3>
+                <h3 className="mt-5 text-lg font-semibold">{step.title}</h3>
                 <p className="mt-2 text-sm text-text-secondary text-pretty">
                   {step.description}
                 </p>
-              </>
+              </div>
             )
 
             return "href" in step ? (
-              <Link key={step.number} href={step.href} className="text-center hover:opacity-80">
+              <Link key={step.number} href={step.href} className="hover:opacity-90">
                 {content}
               </Link>
             ) : (
-              <div key={step.number} className="text-center">
+              <div key={step.number}>
                 {content}
               </div>
             )
@@ -56,7 +56,7 @@ export function HowItWorks() {
             href="/book"
             className="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
           >
-            Book a Repair
+            Start a Repair
           </Link>
         </div>
       </div>
