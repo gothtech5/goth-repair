@@ -1,6 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getCalendarClient } from "@/lib/google-calendar"
 
+const RETRYABLE_CODES = new Set(["ETIMEDOUT", "ECONNRESET", "ENOTFOUND", "EAI_AGAIN"])
+const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504])
+
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fn()
+    } catch (err: unknown) {
+      if (attempt >= maxRetries || !isRetryable(err)) throw err
+      await new Promise((r) => setTimeout(r, 500 * 2 ** attempt))
+    }
+  }
+}
+
+function isRetryable(err: unknown): boolean {
+  if (typeof err === "object" && err !== null) {
+    const code = (err as { code?: string }).code
+    if (code && RETRYABLE_CODES.has(code)) return true
+    const status = (err as { status?: number }).status
+    if (status && RETRYABLE_STATUSES.has(status)) return true
+  }
+  return false
+}
+
 const TIMEZONE = "America/Chicago"
 
 const SLOT_TIMES = (() => {
@@ -51,13 +75,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     nextDay.setUTCDate(nextDay.getUTCDate() + 1)
     const nextDateStr = nextDay.toISOString().slice(0, 10)
 
-    const res = await calendar.events.list({
-      calendarId,
-      timeMin: `${date}T05:00:00Z`,
-      timeMax: `${nextDateStr}T05:00:00Z`,
-      timeZone: TIMEZONE,
-      singleEvents: true,
-    })
+    const res = await withRetry(() =>
+      calendar.events.list({
+        calendarId,
+        timeMin: `${date}T05:00:00Z`,
+        timeMax: `${nextDateStr}T05:00:00Z`,
+        timeZone: TIMEZONE,
+        singleEvents: true,
+      })
+    )
 
     const events = res.data.items ?? []
 
