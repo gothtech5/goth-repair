@@ -106,16 +106,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           dateTime: times.end,
           timeZone: "America/Chicago",
         },
-        attendees: [{ email: contact.email }],
-        reminders: {
-          useDefault: false,
-          overrides: [
-            { method: "email", minutes: 60 },
-            { method: "popup", minutes: 30 },
-          ],
-        },
       },
-      sendUpdates: "all",
     })
 
     return NextResponse.json({ success: true })
