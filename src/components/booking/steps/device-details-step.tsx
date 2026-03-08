@@ -23,7 +23,13 @@ export function DeviceDetailsStep({
   const brands = getBrandsForCategory(category)
   const models = selectedBrand ? getModelsForBrand(selectedBrand) : []
 
-  const categoryLabel = category === "phone" ? "phone" : category === "tablet" ? "tablet" : "computer"
+  const CATEGORY_COPY: Record<DeviceCategory, { label: string; tagline: string }> = {
+    phone: { label: "phone", tagline: "We've fixed over 5,000 screens and counting." },
+    tablet: { label: "tablet", tagline: "You're in good hands \u2014 we do 5,000 repairs every month." },
+    computer: { label: "computer", tagline: "From MacBooks to ThinkPads, we've seen it all." },
+  }
+
+  const { label: categoryLabel, tagline } = CATEGORY_COPY[category]
 
   function handleBrandChange(brandId: string) {
     setSelectedBrand(brandId)
@@ -36,7 +42,7 @@ export function DeviceDetailsStep({
         What kind of {categoryLabel} is it?
       </h2>
       <p className="mt-2 text-text-secondary">
-        We repair all major brands — select yours below.
+        {tagline}
       </p>
 
       <div className="mt-8 max-w-md space-y-5">
