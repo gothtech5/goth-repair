@@ -1,4 +1,11 @@
+import type { Metadata } from "next"
 import { CancelForm } from "./cancel-form"
+
+export const metadata: Metadata = {
+  title: "Cancel Appointment | GothTech",
+  description: "Cancel your upcoming GothTech repair appointment.",
+  robots: { index: false, follow: false },
+}
 
 interface CancelPageProps {
   searchParams: Promise<{ token?: string }>

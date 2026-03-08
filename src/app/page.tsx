@@ -40,7 +40,6 @@ const LOCAL_BUSINESS_JSONLD = {
     closes: "21:00",
   },
   priceRange: "$$",
-  image: "https://gothtech.repair/og-image.png",
   hasOfferCatalog: {
     "@type": "OfferCatalog",
     name: "Repair Services",
