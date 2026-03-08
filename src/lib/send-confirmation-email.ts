@@ -23,7 +23,8 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
   const { eventId, customerName, email, date, timeSlot, brand, modelName, issues } = params
 
   const cancelToken = createCancelToken(eventId)
-  const cancelUrl = `https://gothtech.repair/cancel?token=${encodeURIComponent(cancelToken)}`
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://goth-repair.vercel.app"
+  const cancelUrl = `${baseUrl}/cancel?token=${encodeURIComponent(cancelToken)}`
   const deviceDisplay = brand ? `${brand} ${modelName}` : modelName
 
   const subject = `Your GothTech repair appointment — ${date} at ${timeSlot}`
@@ -64,7 +65,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
       </a>
 
       <p style="margin: 32px 0 0; font-size: 12px; color: #9ca3af;">
-        GothTech · Minneapolis, MN · gothtech.repair
+        GothTech · Minneapolis, MN · gothtechnology.com
       </p>
     </div>
   `.trim()
@@ -80,7 +81,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
     "",
     `Need to cancel? Visit: ${cancelUrl}`,
     "",
-    "GothTech · Minneapolis, MN · gothtech.repair",
+    "GothTech · Minneapolis, MN · gothtechnology.com",
   ].join("\n")
 
   const resend = getResendClient()
