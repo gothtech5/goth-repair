@@ -37,7 +37,7 @@ export function DeviceDetailsStep({
   }
 
   return (
-    <div>
+    <div className="pb-24">
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
         What kind of {categoryLabel} is it?
       </h2>
@@ -89,14 +89,16 @@ export function DeviceDetailsStep({
         )}
       </div>
 
-      <div className="mt-8 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-sm text-accent hover:underline"
-        >
-          &larr; Back
-        </button>
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border-light bg-surface/95 px-6 py-4 backdrop-blur-sm safe-area-inset-bottom">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-sm text-accent hover:underline"
+          >
+            &larr; Back
+          </button>
+        </div>
       </div>
     </div>
   )

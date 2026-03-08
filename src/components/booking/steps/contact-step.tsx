@@ -46,7 +46,7 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
   }
 
   return (
-    <div>
+    <div className="pb-24">
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
         Last step — enter your contact info
       </h2>
@@ -54,7 +54,7 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
         We&apos;ll use this to confirm your appointment. No payment until after the repair.
       </p>
 
-      <form ref={formRef} onSubmit={handleSubmit} className="mt-8 max-w-lg space-y-5">
+      <form id="contact-form" ref={formRef} onSubmit={handleSubmit} className="mt-8 max-w-lg space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
           <Field name="firstName" label="First name" required error={errors.firstName} />
           <Field name="lastName" label="Last name" required error={errors.lastName} />
@@ -111,7 +111,10 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
         {submitError && (
           <p className="text-sm text-destructive" role="alert">{submitError}</p>
         )}
-        <div className="flex items-center justify-between">
+      </form>
+
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border-light bg-surface/95 px-6 py-4 backdrop-blur-sm safe-area-inset-bottom">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
           <button
             type="button"
             onClick={onBack}
@@ -121,13 +124,14 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
           </button>
           <button
             type="submit"
+            form="contact-form"
             disabled={submitting}
-            className="rounded-lg bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+            className="rounded-xl bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Confirm Booking"}
           </button>
         </div>
-      </form>
+      </div>
     </div>
   )
 }

@@ -126,7 +126,7 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
     (viewYear === today.getFullYear() && viewMonth > today.getMonth())
 
   return (
-    <div>
+    <div className="pb-24">
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
         {selectedDate ? "Pick a time" : "Pick a date"}
       </h2>
@@ -247,31 +247,13 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
               <TimeSlotGroup label="Morning" slots={morningSlots} selectedTime={selectedTime} onSelect={setSelectedTime} />
               <TimeSlotGroup label="Afternoon" slots={afternoonSlots} selectedTime={selectedTime} onSelect={setSelectedTime} />
 
-              {selectedTime && (
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={onBack}
-                    className="text-sm text-accent hover:underline"
-                  >
-                    &larr; Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onSelect(selectedDate, selectedTime)}
-                    className="rounded-xl bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover"
-                  >
-                    Continue &rarr;
-                  </button>
-                </div>
-              )}
             </div>
           )}
         </div>
       </div>
 
-      {!selectedTime && (
-        <div className="mt-8">
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border-light bg-surface/95 px-6 py-4 backdrop-blur-sm safe-area-inset-bottom">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
           <button
             type="button"
             onClick={onBack}
@@ -279,8 +261,24 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
           >
             &larr; Back
           </button>
+          <div className="flex items-center gap-3">
+            {selectedTime && (
+              <>
+                <span className="text-sm text-text-secondary">
+                  {selectedTime}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onSelect(selectedDate!, selectedTime)}
+                  className="rounded-xl bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover"
+                >
+                  Continue &rarr;
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
