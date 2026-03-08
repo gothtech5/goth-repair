@@ -28,6 +28,16 @@ function slotTo24h(slot: string): { hours: number; minutes: number } {
   return { hours, minutes }
 }
 
+function slotToMinutes(hours: number, minutes: number): number {
+  return hours * 60 + minutes
+}
+
+function eventToLocalMinutes(dateTime: string): number {
+  const d = new Date(dateTime)
+  const local = new Date(d.toLocaleString("en-US", { timeZone: TIMEZONE }))
+  return local.getHours() * 60 + local.getMinutes()
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const date = request.nextUrl.searchParams.get("date")
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -37,33 +47,36 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { calendar, calendarId } = getCalendarClient()
 
-    const dayStart = `${date}T00:00:00`
-    const dayEnd = `${date}T23:59:59`
+    const nextDay = new Date(`${date}T12:00:00Z`)
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1)
+    const nextDateStr = nextDay.toISOString().slice(0, 10)
 
-    const res = await calendar.freebusy.query({
-      requestBody: {
-        timeMin: new Date(dayStart).toISOString(),
-        timeMax: new Date(dayEnd).toISOString(),
-        timeZone: TIMEZONE,
-        items: [{ id: calendarId }],
-      },
+    const res = await calendar.events.list({
+      calendarId,
+      timeMin: `${date}T05:00:00Z`,
+      timeMax: `${nextDateStr}T05:00:00Z`,
+      timeZone: TIMEZONE,
+      singleEvents: true,
     })
 
-    const busySlots = res.data.calendars?.[calendarId]?.busy ?? []
+    const events = res.data.items ?? []
 
     const unavailable = new Set<string>()
 
-    for (const busy of busySlots) {
-      if (!busy.start || !busy.end) continue
-      const busyStart = new Date(busy.start).getTime()
-      const busyEnd = new Date(busy.end).getTime()
+    for (const event of events) {
+      const start = event.start?.dateTime
+      const end = event.end?.dateTime
+      if (!start || !end) continue
+
+      const busyStartMin = eventToLocalMinutes(start)
+      const busyEndMin = eventToLocalMinutes(end)
 
       for (const slot of SLOT_TIMES) {
         const { hours, minutes } = slotTo24h(slot)
-        const slotStart = new Date(`${date}T${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`).getTime()
-        const slotEnd = slotStart + 30 * 60 * 1000
+        const slotStartMin = slotToMinutes(hours, minutes)
+        const slotEndMin = slotStartMin + 30
 
-        if (slotStart < busyEnd && slotEnd > busyStart) {
+        if (slotStartMin < busyEndMin && slotEndMin > busyStartMin) {
           unavailable.add(slot)
         }
       }
