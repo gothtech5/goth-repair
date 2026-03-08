@@ -45,6 +45,9 @@ function validatePayload(body: unknown): body is BookingPayload {
   return true
 }
 
+const OPEN_HOUR = 11
+const CLOSE_HOUR = 21
+
 function parseTimeSlot(date: string, timeSlot: string): { start: string; end: string } {
   const match = timeSlot.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
   if (!match) throw new Error("Invalid time slot format")
@@ -55,6 +58,10 @@ function parseTimeSlot(date: string, timeSlot: string): { start: string; end: st
 
   if (period === "PM" && hours !== 12) hours += 12
   if (period === "AM" && hours === 12) hours = 0
+
+  if (hours < OPEN_HOUR || hours >= CLOSE_HOUR) {
+    throw new Error("Outside business hours (11 AM – 9 PM)")
+  }
 
   const hh = hours.toString().padStart(2, "0")
   const mm = minutes.toString().padStart(2, "0")
