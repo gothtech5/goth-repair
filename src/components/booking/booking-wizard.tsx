@@ -32,6 +32,10 @@ export function BookingWizard() {
     const category = searchParams.get("category") as DeviceCategory | null
     if (category && VALID_CATEGORIES.includes(category) && state.step === "device") {
       dispatch({ type: "SET_CATEGORY", payload: category })
+      const brand = searchParams.get("brand")
+      if (brand) {
+        dispatch({ type: "SET_BRAND", payload: brand })
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
