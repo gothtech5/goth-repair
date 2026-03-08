@@ -41,8 +41,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border-light bg-surface/80 backdrop-blur-md">
       <nav ref={navRef} className="mx-auto flex max-w-[1120px] items-center justify-between px-6 py-4">
-        <Link href="/" className="text-xl font-semibold tracking-tight" onClick={() => setOpen(null)}>
-          GothTech
+        <Link href="/" className="flex items-center" onClick={() => setOpen(null)}>
+          <Image src="/images/logo.png" alt="GothTech" width={40} height={40} className="size-10 -mr-2" />
+          <span className="text-xl font-semibold tracking-tight mt-1.5">othTech</span>
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-6">
@@ -86,13 +87,22 @@ export function Header() {
           >
             (612)-987-8107
           </a>
-          <Link
-            href="/book"
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover whitespace-nowrap"
-            onClick={() => setOpen(null)}
-          >
-            Start a Repair
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/#location"
+              className="hidden rounded-lg border border-border-light px-5 py-2.5 text-sm font-medium hover:bg-surface-secondary whitespace-nowrap sm:block"
+              onClick={() => setOpen(null)}
+            >
+              Find the Store
+            </Link>
+            <Link
+              href="/book"
+              className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover whitespace-nowrap"
+              onClick={() => setOpen(null)}
+            >
+              Start a Repair
+            </Link>
+          </div>
         </div>
       </nav>
     </header>
