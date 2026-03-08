@@ -4,3 +4,8 @@ node_modules/
 extractimages_selected_372026_35933/
 goth-mall-karmel/
 mall-of-america-clone/
+.vercel
+.env*
+!.env.example
+tsconfig.tsbuildinfo
+tasks/

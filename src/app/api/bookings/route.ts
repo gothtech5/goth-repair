@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getCalendarClient } from "@/lib/google-calendar"
+import { sendConfirmationEmail } from "@/lib/send-confirmation-email"
 
 interface BookingPayload {
   deviceType: string
@@ -94,7 +95,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       contact.notes ? `Notes: ${contact.notes}` : "",
     ].filter(Boolean).join("\n")
 
-    await calendar.events.insert({
+    const event = await calendar.events.insert({
       calendarId,
       sendUpdates: "all",
       requestBody: {
@@ -110,6 +111,24 @@ export async function POST(request: Request): Promise<NextResponse> {
         },
       },
     })
+
+    const eventId = event.data.id
+    if (eventId) {
+      try {
+        await sendConfirmationEmail({
+          eventId,
+          customerName,
+          email: contact.email,
+          date,
+          timeSlot,
+          deviceType,
+          modelName,
+          issueName,
+        })
+      } catch (emailErr) {
+        console.error("Failed to send confirmation email:", emailErr)
+      }
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {
