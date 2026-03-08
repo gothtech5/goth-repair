@@ -7,7 +7,7 @@ export function Header() {
         <Link href="/" className="text-xl font-semibold tracking-tight">
           GothTech
         </Link>
-        <div className="flex items-center gap-8">
+        <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-8">
           <Link
             href="/#services"
             className="hidden text-sm text-text-secondary hover:text-text-primary sm:block"
@@ -28,13 +28,13 @@ export function Header() {
           </Link>
           <a
             href="tel:+16129878107"
-            className="text-sm font-bold text-accent hover:text-accent-hover"
+            className="text-sm font-bold text-accent hover:text-accent-hover whitespace-nowrap"
           >
             (612)-987-8107
           </a>
           <Link
             href="/book"
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
+            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover whitespace-nowrap"
           >
             Book a Repair
           </Link>

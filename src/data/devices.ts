@@ -51,6 +51,12 @@ export const DEVICE_TYPES: DeviceTypeInfo[] = [
 ]
 
 export const DEVICE_MODELS: DeviceModel[] = [
+  // iPhone 17 Series
+  { id: "iphone-17-pro-max", name: "iPhone 17 Pro Max", type: "iphone", generation: "iPhone 17 Series" },
+  { id: "iphone-17-pro", name: "iPhone 17 Pro", type: "iphone", generation: "iPhone 17 Series" },
+  { id: "iphone-17-air", name: "iPhone 17 Air", type: "iphone", generation: "iPhone 17 Series" },
+  { id: "iphone-17-plus", name: "iPhone 17 Plus", type: "iphone", generation: "iPhone 17 Series" },
+  { id: "iphone-17", name: "iPhone 17", type: "iphone", generation: "iPhone 17 Series" },
   // iPhone 16 Series
   { id: "iphone-16-pro-max", name: "iPhone 16 Pro Max", type: "iphone", generation: "iPhone 16 Series" },
   { id: "iphone-16-pro", name: "iPhone 16 Pro", type: "iphone", generation: "iPhone 16 Series" },
