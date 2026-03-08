@@ -8,7 +8,6 @@ const SERVICES = [
   { title: "Screen Replacement", subtitle: "iPhone & iPad", linkText: "See pricing" },
   { title: "Battery Service", subtitle: "same-day swap", linkText: "Book now" },
   { title: "Diagnostics", subtitle: "free assessment", linkText: "Schedule" },
-  { title: "Data Recovery", subtitle: "by consultation", linkText: "Learn more" },
 ] as const
 
 function getOpenUntil(): string {
@@ -36,7 +35,7 @@ export function Hero() {
       </div>
 
       <div className="mx-auto max-w-[980px] px-4 pb-6 sm:px-6">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-5">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {SERVICES.map((service) => (
             <div key={service.title} className="flex min-w-[140px] flex-col gap-2">
               <CheckCircle className="size-6 fill-success stroke-white" />
