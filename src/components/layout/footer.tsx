@@ -43,7 +43,20 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <p className="text-sm font-medium">Contact</p>
+            <p className="text-sm font-medium">Visit Us</p>
+            <a
+              href="https://maps.app.goo.gl/RpGRgnfvj8TSac8B6"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 text-sm"
+              aria-label="4.9 out of 5 stars on Google, 170 reviews"
+            >
+              <span className="flex gap-0.5 text-amber-400" aria-hidden="true">
+                {"★★★★★"}
+              </span>
+              <span className="font-medium tabular-nums">4.9</span>
+              <span className="text-text-tertiary">(170 reviews)</span>
+            </a>
             <ul className="mt-2 space-y-1.5 text-sm text-text-secondary">
               <li>200 W Lake St #203</li>
               <li>Minneapolis, MN 55408</li>
