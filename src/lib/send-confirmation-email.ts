@@ -27,7 +27,13 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
   const cancelUrl = `${baseUrl}/cancel?token=${encodeURIComponent(cancelToken)}`
   const deviceDisplay = brand ? `${brand} ${modelName}` : modelName
 
-  const subject = `Your GothTech repair appointment — ${date} at ${timeSlot}`
+  const friendlyDate = new Date(`${date}T12:00:00`).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  })
+
+  const subject = `Your GothTech repair — ${friendlyDate} at ${timeSlot}`
 
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 16px;">
@@ -49,7 +55,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Date</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${date}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${friendlyDate}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; color: #6b7280;">Time</td>
@@ -76,7 +82,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
     `Name: ${customerName}`,
     `Device: ${deviceDisplay}`,
     `Issues: ${issues}`,
-    `Date: ${date}`,
+    `Date: ${friendlyDate}`,
     `Time: ${timeSlot}`,
     "",
     `Need to cancel? Visit: ${cancelUrl}`,
