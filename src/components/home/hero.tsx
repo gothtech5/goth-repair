@@ -10,18 +10,23 @@ const SERVICES = [
   { title: "Diagnostics", subtitle: "free assessment", linkText: "Schedule" },
 ] as const
 
-function getOpenUntil(): string {
+type StoreStatus =
+  | { open: false; label: string; next: string }
+  | { open: true; label: string }
+
+function getStoreStatus(): StoreStatus {
   const now = new Date()
   const hour = now.getHours()
 
-  if (hour >= 21) return "Closed for today. Back tomorrow at 11:00 a.m."
-  if (hour < 11) return "Opens at 11:00 a.m."
-  return "Open until 9:00 p.m."
+  if (hour >= 21)
+    return { open: false, label: "Closed for today.", next: "Back tomorrow at 11:00 a.m." }
+  if (hour < 11)
+    return { open: true, label: "Opens at 11:00 a.m." }
+  return { open: true, label: "Open until 9:00 p.m." }
 }
 
 export function Hero() {
-  const status = getOpenUntil()
-  const isOpen = !status.startsWith("Closed")
+  const status = getStoreStatus()
 
   return (
     <section className="border-b border-border-light">
@@ -29,8 +34,15 @@ export function Hero() {
         <h1 className="text-[40px] font-semibold leading-tight tracking-tight text-balance sm:text-[48px]">
           Goth Mall of Karmel
         </h1>
-        <p className={`mt-2 text-lg ${isOpen ? "text-text-secondary" : "text-destructive"}`}>
-          {status}
+        <p className="mt-2 text-lg">
+          {status.open ? (
+            <span className="text-text-secondary">{status.label}</span>
+          ) : (
+            <>
+              <span className="text-destructive">{status.label}</span>{" "}
+              <span className="text-text-secondary">{status.next}</span>
+            </>
+          )}
         </p>
       </div>
 
