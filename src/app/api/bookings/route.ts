@@ -49,12 +49,13 @@ function parseTimeSlot(date: string, timeSlot: string): { start: string; end: st
   if (period === "PM" && hours !== 12) hours += 12
   if (period === "AM" && hours === 12) hours = 0
 
-  const startDate = new Date(`${date}T${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`)
-  const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
+  const hh = hours.toString().padStart(2, "0")
+  const mm = minutes.toString().padStart(2, "0")
+  const endHour = (hours + 1).toString().padStart(2, "0")
 
   return {
-    start: startDate.toISOString(),
-    end: endDate.toISOString(),
+    start: `${date}T${hh}:${mm}:00`,
+    end: `${date}T${endHour}:${mm}:00`,
   }
 }
 
@@ -95,6 +96,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     await calendar.events.insert({
       calendarId,
+      sendUpdates: "all",
       requestBody: {
         summary: `Repair: ${modelName} — ${issueName} (${customerName})`,
         description,
