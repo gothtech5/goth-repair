@@ -48,7 +48,7 @@ export function ServicesOverview() {
             <Link
               key={service.title}
               href={`/book?device=${service.device}`}
-              className="group relative overflow-hidden rounded-xl border border-border-light bg-surface p-6 md:p-8"
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-border-light bg-surface p-6 md:p-8"
             >
               {service.image && (
                 <div className="mb-4 flex justify-end">
@@ -72,7 +72,7 @@ export function ServicesOverview() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-5 text-sm font-medium text-accent group-hover:underline">
+              <p className="mt-auto pt-5 text-sm font-medium text-accent group-hover:underline">
                 Book now
               </p>
             </Link>
