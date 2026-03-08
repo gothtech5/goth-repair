@@ -49,13 +49,13 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="mt-2 inline-flex items-center gap-1.5 text-sm"
-              aria-label="4.9 out of 5 stars on Google, 170 reviews"
+              aria-label="5.0 out of 5 stars on Google, 257 reviews"
             >
               <span className="flex gap-0.5 text-amber-400" aria-hidden="true">
                 {"★★★★★"}
               </span>
-              <span className="font-medium tabular-nums">4.9</span>
-              <span className="text-text-tertiary">(170 reviews)</span>
+              <span className="font-medium tabular-nums">5.0</span>
+              <span className="text-text-tertiary">(257 reviews)</span>
             </a>
             <ul className="mt-2 space-y-1.5 text-sm text-text-secondary">
               <li>200 W Lake St #203</li>

@@ -18,6 +18,24 @@ export function LocationHours() {
         <div className="mt-12 grid gap-8 md:grid-cols-2">
           <div>
             <h3 className="text-lg font-medium">GothTech</h3>
+            <a
+              href="https://maps.app.goo.gl/RpGRgnfvj8TSac8B6"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm"
+              aria-label="5.0 out of 5 stars on Google, 257 reviews"
+            >
+              <span className="flex gap-0.5 text-amber-400" aria-hidden="true">
+                {"★★★★★"}
+              </span>
+              <span className="font-medium tabular-nums">5.0</span>
+              <span className="text-text-tertiary">(257 reviews)</span>
+            </a>
+            <div className="mt-3 flex items-center gap-2 text-sm">
+              <a href="tel:+16129878107" className="font-medium hover:text-accent">
+                (612)-987-8107
+              </a>
+            </div>
             <address className="mt-3 space-y-1 text-sm not-italic text-text-secondary">
               <p>200 W Lake St #203</p>
               <p>Minneapolis, MN 55408</p>
