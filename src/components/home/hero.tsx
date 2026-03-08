@@ -14,7 +14,7 @@ function getOpenUntil(): string {
   const now = new Date()
   const hour = now.getHours()
 
-  if (hour >= 21) return "Closed for today"
+  if (hour >= 21) return "Closed for today. Back tomorrow at 11:00 a.m."
   if (hour < 11) return "Opens at 11:00 a.m."
   return "Open until 9:00 p.m."
 }
@@ -51,14 +51,6 @@ export function Hero() {
               )}
             </div>
           ))}
-        </div>
-        <div className="mt-6 text-center">
-          <Link
-            href="/book"
-            className="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
-          >
-            Book a Repair
-          </Link>
         </div>
       </div>
     </section>
