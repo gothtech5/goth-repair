@@ -88,7 +88,14 @@ export function Header() {
             <Phone className="size-4" />
             (612)-987-8107
           </a>
-          <div className="flex flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+          <div className="flex items-center gap-2">
+            <a
+              href="tel:+16129878107"
+              aria-label="Call GothTech"
+              className="flex items-center justify-center rounded-lg border border-border-light p-2.5 text-accent hover:bg-surface-secondary sm:hidden"
+            >
+              <Phone className="size-5" />
+            </a>
             <Link
               href="/#location"
               className="hidden rounded-lg border border-border-light px-5 py-2.5 text-sm font-medium hover:bg-surface-secondary whitespace-nowrap sm:block"
@@ -103,13 +110,6 @@ export function Header() {
             >
               Start a Repair
             </Link>
-            <a
-              href="tel:+16129878107"
-              className="flex items-center gap-1.5 text-xs font-bold text-accent hover:text-accent-hover whitespace-nowrap sm:hidden"
-            >
-              <Phone className="size-3.5" />
-              (612)-987-8107
-            </a>
           </div>
         </div>
       </nav>
