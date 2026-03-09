@@ -74,7 +74,7 @@ export function IssueStep({ category, onSubmit, onBack }: IssueStepProps) {
         What&apos;s wrong with it?
       </h2>
       <div className="mt-2 flex items-center gap-2">
-        <span className="inline-flex items-center rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
+        <span className="inline-flex items-center rounded-lg bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
           Select multiple
         </span>
         <p className="text-text-secondary">
