@@ -13,7 +13,7 @@ const DEVICE_CARDS: { category: DeviceCategory; label: string; image: string }[]
 
 const SERVICES = [
   { title: "Walk-In Repair", subtitle: "no appointment needed", linkText: "Get directions", linkHref: "/#location" },
-  { title: "Screen Replacement", subtitle: "iPhone & iPad", linkText: "See pricing" },
+  { title: "Screen Replacement", subtitle: "iPhone & iPad", linkText: "Book now" },
   { title: "Battery Service", subtitle: "same-day swap", linkText: "Book now" },
   { title: "Diagnostics", subtitle: "free assessment", linkText: "Schedule" },
 ] as const
