@@ -3,33 +3,34 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/react"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { BUSINESS } from "@/config/business"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
+const seoTitle = `${BUSINESS.name} | ${BUSINESS.tagline} for Phones and iPads`
+
 export const metadata: Metadata = {
-  title: "GothTech | Expert Repair Services for Phones and iPads",
-  description:
-    "Fast, reliable Apple device repair in Minneapolis. iPhone, iPad, and Apple Watch screen repair, battery replacement, and more. Free diagnostics.",
-  metadataBase: new URL("https://gothtech.repair"),
+  title: seoTitle,
+  description: BUSINESS.seo.description,
+  metadataBase: new URL(`https://${BUSINESS.domain}`),
   alternates: { canonical: "/" },
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "GothTech | Expert Repair Services for Phones and iPads",
-    description:
-      "Fast, reliable Apple device repair in Minneapolis. Screen repair, battery replacement, and more. Free diagnostics.",
-    url: "https://gothtech.repair",
-    siteName: "GothTech",
+    title: seoTitle,
+    description: BUSINESS.seo.description,
+    url: `https://${BUSINESS.domain}`,
+    siteName: BUSINESS.name,
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "GothTech | Expert Repair Services for Phones and iPads",
-    description: "Fast, reliable Apple device repair in Minneapolis. Free diagnostics.",
+    title: seoTitle,
+    description: BUSINESS.seo.description,
   },
 }
 

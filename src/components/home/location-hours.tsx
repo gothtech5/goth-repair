@@ -1,12 +1,4 @@
-const HOURS = [
-  { day: "Monday", time: "11:00 AM - 9:00 PM" },
-  { day: "Tuesday", time: "11:00 AM - 9:00 PM" },
-  { day: "Wednesday", time: "11:00 AM - 9:00 PM" },
-  { day: "Thursday", time: "11:00 AM - 9:00 PM" },
-  { day: "Friday", time: "11:00 AM - 9:00 PM" },
-  { day: "Saturday", time: "11:00 AM - 9:00 PM" },
-  { day: "Sunday", time: "11:00 AM - 9:00 PM" },
-] as const
+import { BUSINESS } from "@/config/business"
 
 export function LocationHours() {
   return (
@@ -17,32 +9,32 @@ export function LocationHours() {
         </h2>
         <div className="mt-12 grid gap-8 md:grid-cols-2">
           <div>
-            <h3 className="text-lg font-medium">GothTech</h3>
+            <h3 className="text-lg font-medium">{BUSINESS.name}</h3>
             <a
-              href="https://maps.app.goo.gl/RpGRgnfvj8TSac8B6"
+              href={BUSINESS.google.reviewUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-flex items-center gap-1.5 text-sm"
-              aria-label="5.0 out of 5 stars on Google, 257 reviews"
+              aria-label={`${BUSINESS.google.rating} out of 5 stars on Google, ${BUSINESS.google.reviewCount} reviews`}
             >
               <span className="flex gap-0.5 text-amber-400" aria-hidden="true">
                 {"★★★★★"}
               </span>
-              <span className="font-medium tabular-nums">5.0</span>
-              <span className="text-text-tertiary">(257 reviews)</span>
+              <span className="font-medium tabular-nums">{BUSINESS.google.rating}</span>
+              <span className="text-text-tertiary">({BUSINESS.google.reviewCount} reviews)</span>
             </a>
             <div className="mt-3 flex items-center gap-2 text-sm">
-              <a href="tel:+16129878107" className="font-medium hover:text-accent">
-                (612)-987-8107
+              <a href={BUSINESS.contact.phoneHref} className="font-medium hover:text-accent">
+                {BUSINESS.contact.phone}
               </a>
             </div>
             <address className="mt-3 space-y-1 text-sm not-italic text-text-secondary">
-              <p>200 W Lake St #203</p>
-              <p>Minneapolis, MN 55408</p>
+              <p>{BUSINESS.location.address}</p>
+              <p>{BUSINESS.location.city}, {BUSINESS.location.state} {BUSINESS.location.zip}</p>
             </address>
             <table className="mt-6 w-full text-sm">
               <tbody>
-                {HOURS.map((row) => (
+                {BUSINESS.hours.displayHours.map((row) => (
                   <tr key={row.day} className="border-b border-border-light">
                     <td className="py-2.5 font-medium">{row.day}</td>
                     <td className="py-2.5 text-right text-text-secondary">
@@ -55,8 +47,8 @@ export function LocationHours() {
           </div>
           <div className="min-h-[300px] overflow-hidden rounded-xl border border-border-light">
             <iframe
-              title="GothTech location"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2823.0!2d-93.2814591!3d44.9484517!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x52b333a4ebdf80e3%3A0xd7c1f279d9208b88!2sGothTech%3A%20Expert%20Repair%20Services%20for%20Phones%20and%20iPads.!5e0!3m2!1sen!2sus!4v1"
+              title={`${BUSINESS.name} location`}
+              src={BUSINESS.location.googleMapsEmbed}
               className="size-full"
               style={{ border: 0 }}
               allowFullScreen

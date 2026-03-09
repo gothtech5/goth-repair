@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { BUSINESS } from "@/config/business"
 
 const STEPS = [
   {
@@ -10,7 +11,7 @@ const STEPS = [
   {
     number: "2",
     title: "Drop Off Your Device",
-    description: "Bring it to our Minneapolis location. Free diagnostics included.",
+    description: `Bring it to our ${BUSINESS.location.city} location. Free diagnostics included.`,
   },
   {
     number: "3",

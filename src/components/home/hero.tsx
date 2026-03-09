@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { CheckCircle } from "lucide-react"
 import type { DeviceCategory } from "@/types/booking"
+import { BUSINESS } from "@/config/business"
 
 const DEVICE_CARDS: { category: DeviceCategory; label: string; image: string }[] = [
   { category: "phone", label: "Phone", image: "/images/iphone.png" },
@@ -26,11 +27,11 @@ function getStoreStatus(): StoreStatus {
   const now = new Date()
   const hour = now.getHours()
 
-  if (hour >= 21)
-    return { open: false, label: "Closed for today.", next: "Back tomorrow at 11:00 a.m." }
-  if (hour < 11)
-    return { open: true, label: "Opens at 11:00 a.m." }
-  return { open: true, label: "Open until 9:00 p.m." }
+  if (hour >= BUSINESS.hours.closeHour)
+    return { open: false, label: "Closed for today.", next: `Back tomorrow at ${BUSINESS.hours.opensDisplay}` }
+  if (hour < BUSINESS.hours.openHour)
+    return { open: true, label: `Opens at ${BUSINESS.hours.opensDisplay}` }
+  return { open: true, label: `Open until ${BUSINESS.hours.closesDisplay}` }
 }
 
 export function Hero() {
@@ -105,7 +106,7 @@ export function Hero() {
           <div className="relative overflow-hidden rounded-2xl">
             <Image
               src="/images/store.jpg"
-              alt="GothTech repair shop with phone cases and accessories on display"
+              alt={`${BUSINESS.name} repair shop with phone cases and accessories on display`}
               width={640}
               height={480}
               className="h-auto w-full object-cover"

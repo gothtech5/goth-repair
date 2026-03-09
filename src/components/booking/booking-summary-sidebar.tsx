@@ -1,6 +1,7 @@
 "use client"
 
-import { DEVICE_MODELS, DEVICE_CATEGORIES, BRANDS, REPAIR_ISSUES, STORE_INFO } from "@/data/devices"
+import { DEVICE_MODELS, DEVICE_CATEGORIES, BRANDS, REPAIR_ISSUES } from "@/data/devices"
+import { BUSINESS } from "@/config/business"
 import { STEPS, type BookingState, type BookingStep } from "@/types/booking"
 import { Shield, Clock, Stethoscope, BadgePercent } from "lucide-react"
 
@@ -78,11 +79,11 @@ export function BookingSummarySidebar({ state, onChangeStep }: BookingSummarySid
         )}
 
         <div className="mt-6 border-t border-border-light pt-4">
-          <p className="text-xs font-medium text-text-tertiary">{STORE_INFO.name}</p>
+          <p className="text-xs font-medium text-text-tertiary">{BUSINESS.name}</p>
           <p className="mt-0.5 text-xs text-text-tertiary">
-            {STORE_INFO.address}, {STORE_INFO.city}, {STORE_INFO.state} {STORE_INFO.zip}
+            {BUSINESS.location.address}, {BUSINESS.location.city}, {BUSINESS.location.state} {BUSINESS.location.zip}
           </p>
-          <p className="mt-0.5 text-xs text-text-tertiary">{STORE_INFO.phone}</p>
+          <p className="mt-0.5 text-xs text-text-tertiary">{BUSINESS.contact.phone}</p>
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3">

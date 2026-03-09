@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next"
+import { BUSINESS } from "@/config/business"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://gothtech.repair"
+  const baseUrl = `https://${BUSINESS.domain}`
 
   return [
     { url: baseUrl, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },

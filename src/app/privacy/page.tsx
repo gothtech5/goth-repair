@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
+import { BUSINESS } from "@/config/business"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | GothTech",
-  description: "GothTech privacy policy — how we collect, use, and protect your data.",
+  title: `Privacy Policy | ${BUSINESS.name}`,
+  description: `${BUSINESS.name} privacy policy — how we collect, use, and protect your data.`,
 }
 
 export default function PrivacyPage() {
@@ -92,11 +93,11 @@ export default function PrivacyPage() {
             data, contact us at:
           </p>
           <p className="mt-2">
-            GothTech
+            {BUSINESS.name}
             <br />
-            200 W Lake St #203
+            {BUSINESS.location.address}
             <br />
-            Minneapolis, MN 55408
+            {BUSINESS.location.city}, {BUSINESS.location.state} {BUSINESS.location.zip}
           </p>
         </section>
       </div>

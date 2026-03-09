@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { CalendarPlus, Phone, MapPin } from "lucide-react"
-import { DEVICE_MODELS, BRANDS, REPAIR_ISSUES, STORE_INFO } from "@/data/devices"
+import { DEVICE_MODELS, BRANDS, REPAIR_ISSUES } from "@/data/devices"
+import { BUSINESS } from "@/config/business"
 import type { BookingState } from "@/types/booking"
 
 interface ConfirmationStepProps {
@@ -11,11 +12,11 @@ interface ConfirmationStepProps {
 }
 
 function buildCalendarUrl(state: BookingState, model: { name: string } | undefined): string {
-  const title = encodeURIComponent(`GothTech Repair — ${model?.name ?? "Device"}`)
+  const title = encodeURIComponent(`${BUSINESS.name} Repair — ${model?.name ?? "Device"}`)
   const location = encodeURIComponent(
-    `${STORE_INFO.address}, ${STORE_INFO.city}, ${STORE_INFO.state} ${STORE_INFO.zip}`,
+    `${BUSINESS.location.address}, ${BUSINESS.location.city}, ${BUSINESS.location.state} ${BUSINESS.location.zip}`,
   )
-  const details = encodeURIComponent("Bring your device to GothTech for your scheduled repair.")
+  const details = encodeURIComponent(`Bring your device to ${BUSINESS.name} for your scheduled repair.`)
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&location=${location}&details=${details}`
 }
 
@@ -26,7 +27,7 @@ export function ConfirmationStep({ state, onReset }: ConfirmationStepProps) {
   const firstName = state.contact?.firstName ?? ""
   const calendarUrl = buildCalendarUrl(state, model)
   const directionsUrl = `https://maps.google.com/?q=${encodeURIComponent(
-    `${STORE_INFO.address}, ${STORE_INFO.city}, ${STORE_INFO.state} ${STORE_INFO.zip}`,
+    `${BUSINESS.location.address}, ${BUSINESS.location.city}, ${BUSINESS.location.state} ${BUSINESS.location.zip}`,
   )}`
 
   return (
@@ -47,7 +48,7 @@ export function ConfirmationStep({ state, onReset }: ConfirmationStepProps) {
         You&apos;re all set{firstName ? `, ${firstName}` : ""}. See you soon!
       </h2>
       <p className="mt-2 text-text-secondary">
-        Your repair appointment has been booked. We&apos;ll see you at GothTech.
+        Your repair appointment has been booked. We&apos;ll see you at {BUSINESS.name}.
       </p>
 
       <div className="mt-8 rounded-xl border border-border-light p-6 text-left">
@@ -69,7 +70,7 @@ export function ConfirmationStep({ state, onReset }: ConfirmationStepProps) {
       <div className="mt-6 rounded-xl border border-border-light p-5 text-left text-sm">
         <p className="font-medium">Bring your device to</p>
         <p className="mt-1 text-text-secondary">
-          {STORE_INFO.address}, {STORE_INFO.city}, {STORE_INFO.state} {STORE_INFO.zip}
+          {BUSINESS.location.address}, {BUSINESS.location.city}, {BUSINESS.location.state} {BUSINESS.location.zip}
         </p>
       </div>
 
@@ -84,7 +85,7 @@ export function ConfirmationStep({ state, onReset }: ConfirmationStepProps) {
           Add to Calendar
         </a>
         <a
-          href={`tel:${STORE_INFO.phone.replace(/[^\d+]/g, "")}`}
+          href={BUSINESS.contact.phoneHref}
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-light px-4 py-2.5 text-sm font-medium hover:bg-surface-secondary"
         >
           <Phone className="size-4" />

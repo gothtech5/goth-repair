@@ -1,4 +1,5 @@
 import type { DeviceCategory } from "@/types/booking"
+import { BUSINESS } from "@/config/business"
 
 export interface DeviceCategoryInfo {
   id: DeviceCategory
@@ -319,10 +320,12 @@ export function getIssuesForCategory(categoryId: DeviceCategory): RepairIssue[] 
 }
 
 export function getTimeSlots(): TimeSlot[] {
+  const openHour: number = BUSINESS.hours.openHour
+  const lastSlotHour: number = BUSINESS.hours.closeHour - 1
   const slots: TimeSlot[] = []
-  for (let hour = 11; hour <= 20; hour++) {
+  for (let hour = openHour; hour <= lastSlotHour; hour++) {
     for (const minutes of [0, 30]) {
-      if (hour === 20 && minutes === 30) continue
+      if (hour === lastSlotHour && minutes === 30) continue
       const h = hour > 12 ? hour - 12 : hour === 12 ? 12 : hour
       const ampm = hour >= 12 ? "PM" : "AM"
       const m = minutes.toString().padStart(2, "0")
@@ -331,15 +334,3 @@ export function getTimeSlots(): TimeSlot[] {
   }
   return slots
 }
-
-export const STORE_INFO = {
-  name: "GothTech",
-  address: "200 W Lake St #203",
-  city: "Minneapolis",
-  state: "MN",
-  zip: "55408",
-  phone: "(612)-987-8107",
-  hours: [
-    { day: "Every Day", time: "11:00 AM - 9:00 PM" },
-  ],
-} as const

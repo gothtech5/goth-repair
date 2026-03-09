@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { BUSINESS } from "@/config/business"
 
 interface AppointmentDetails {
   summary: string
@@ -59,7 +60,7 @@ export function CancelForm({ token }: { token: string }) {
       year: "numeric",
       hour: "numeric",
       minute: "2-digit",
-      timeZone: "America/Chicago",
+      timeZone: BUSINESS.location.timezone,
     })
   }
 

@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og"
+import { BUSINESS } from "@/config/business"
 
 export const runtime = "edge"
-export const alt = "GothTech — Expert Apple Device Repair"
+export const alt = `${BUSINESS.name} — ${BUSINESS.tagline}`
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
@@ -23,15 +24,15 @@ export default async function OGImage() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://gothtech.repair/images/logo.png"
+          src={`https://${BUSINESS.domain}/images/logo.png`}
           alt=""
           width={120}
           height={120}
           style={{ marginBottom: 32 }}
         />
-        <div style={{ fontSize: 56, fontWeight: 700, letterSpacing: -1 }}>GothTech</div>
+        <div style={{ fontSize: 56, fontWeight: 700, letterSpacing: -1 }}>{BUSINESS.name}</div>
         <div style={{ fontSize: 28, fontWeight: 400, marginTop: 12, color: "#a1a1aa" }}>
-          Expert Repair Services
+          {BUSINESS.tagline}
         </div>
       </div>
     ),

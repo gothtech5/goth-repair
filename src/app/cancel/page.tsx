@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
+import { BUSINESS } from "@/config/business"
 import { CancelForm } from "./cancel-form"
 
 export const metadata: Metadata = {
-  title: "Cancel Appointment | GothTech",
-  description: "Cancel your upcoming GothTech repair appointment.",
+  title: `Cancel Appointment | ${BUSINESS.name}`,
+  description: `Cancel your upcoming ${BUSINESS.name} repair appointment.`,
   robots: { index: false, follow: false },
 }
 

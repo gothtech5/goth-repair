@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getCalendarClient } from "@/lib/google-calendar"
+import { BUSINESS } from "@/config/business"
 
 const RETRYABLE_CODES = new Set(["ETIMEDOUT", "ECONNRESET", "ENOTFOUND", "EAI_AGAIN"])
 const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504])
@@ -25,13 +26,15 @@ function isRetryable(err: unknown): boolean {
   return false
 }
 
-const TIMEZONE = "America/Chicago"
+const TIMEZONE = BUSINESS.location.timezone
 
 const SLOT_TIMES = (() => {
+  const openHour: number = BUSINESS.hours.openHour
+  const lastSlotHour: number = BUSINESS.hours.closeHour - 1
   const times: string[] = []
-  for (let hour = 11; hour <= 20; hour++) {
+  for (let hour = openHour; hour <= lastSlotHour; hour++) {
     for (const minutes of [0, 30]) {
-      if (hour === 20 && minutes === 30) continue
+      if (hour === lastSlotHour && minutes === 30) continue
       const h = hour > 12 ? hour - 12 : hour === 12 ? 12 : hour
       const ampm = hour >= 12 ? "PM" : "AM"
       const m = minutes.toString().padStart(2, "0")

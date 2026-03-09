@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { BUSINESS } from "@/config/business"
 
 export function Footer() {
   return (
@@ -6,10 +7,9 @@ export function Footer() {
       <div className="mx-auto max-w-[1120px] px-6 py-12">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
-            <p className="font-semibold">GothTech</p>
+            <p className="font-semibold">{BUSINESS.name}</p>
             <p className="mt-2 text-sm text-text-secondary text-pretty">
-              Expert repair services for iPhones, iPads, and Apple Watches in
-              Minneapolis.
+              {BUSINESS.seo.shortDescription}
             </p>
           </div>
           <div>
@@ -45,28 +45,28 @@ export function Footer() {
           <div>
             <p className="text-sm font-medium">Visit Us</p>
             <a
-              href="https://maps.app.goo.gl/RpGRgnfvj8TSac8B6"
+              href={BUSINESS.google.reviewUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-2 inline-flex items-center gap-1.5 text-sm"
-              aria-label="5.0 out of 5 stars on Google, 257 reviews"
+              aria-label={`${BUSINESS.google.rating} out of 5 stars on Google, ${BUSINESS.google.reviewCount} reviews`}
             >
               <span className="flex gap-0.5 text-amber-400" aria-hidden="true">
                 {"★★★★★"}
               </span>
-              <span className="font-medium tabular-nums">5.0</span>
-              <span className="text-text-tertiary">(257 reviews)</span>
+              <span className="font-medium tabular-nums">{BUSINESS.google.rating}</span>
+              <span className="text-text-tertiary">({BUSINESS.google.reviewCount} reviews)</span>
             </a>
             <ul className="mt-2 space-y-1.5 text-sm text-text-secondary">
-              <li>200 W Lake St #203</li>
-              <li>Minneapolis, MN 55408</li>
+              <li>{BUSINESS.location.address}</li>
+              <li>{BUSINESS.location.city}, {BUSINESS.location.state} {BUSINESS.location.zip}</li>
             </ul>
           </div>
         </div>
         <div className="mt-10 border-t border-border-light pt-6 text-center text-sm text-text-tertiary">
           <p>
-            &copy; {new Date().getFullYear()} GothTech. All rights reserved.
-            This website and its content are owned and operated by GothTech.
+            &copy; {new Date().getFullYear()} {BUSINESS.name}. All rights reserved.
+            This website and its content are owned and operated by {BUSINESS.name}.
             Unauthorized reproduction or distribution of any material from this
             site is prohibited.
           </p>

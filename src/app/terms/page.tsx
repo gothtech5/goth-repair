@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
+import { BUSINESS } from "@/config/business"
 
 export const metadata: Metadata = {
-  title: "Terms of Service | GothTech",
-  description: "GothTech terms of service for device repair services.",
+  title: `Terms of Service | ${BUSINESS.name}`,
+  description: `${BUSINESS.name} terms of service for device repair services.`,
 }
 
 export default function TermsPage() {
@@ -19,8 +20,8 @@ export default function TermsPage() {
             Service Description
           </h2>
           <p className="mt-2">
-            GothTech provides repair services for iPhones, iPads, and Apple
-            Watches at our Minneapolis location. By booking a repair through our
+            {BUSINESS.name} provides repair services for iPhones, iPads, and Apple
+            Watches at our {BUSINESS.location.city} location. By booking a repair through our
             website, you agree to these terms.
           </p>
         </section>
@@ -30,7 +31,7 @@ export default function TermsPage() {
             Repair Liability
           </h2>
           <p className="mt-2">
-            GothTech is not responsible for pre-existing conditions, defects, or
+            {BUSINESS.name} is not responsible for pre-existing conditions, defects, or
             damage unrelated to the repair service requested. We are not liable
             for data loss during repair — customers are responsible for backing
             up their devices before service.
@@ -42,7 +43,7 @@ export default function TermsPage() {
             Warranty
           </h2>
           <p className="mt-2">
-            All repairs performed by GothTech include a 30-day warranty covering
+            All repairs performed by {BUSINESS.name} include a {BUSINESS.trust.warrantyDays}-day warranty covering
             the specific repair completed. This warranty does not cover
             subsequent damage, water damage, or issues unrelated to the original
             repair. Warranty is void if the device is opened or repaired by
@@ -68,7 +69,7 @@ export default function TermsPage() {
             Limitation of Liability
           </h2>
           <p className="mt-2">
-            GothTech&apos;s liability is limited to the cost of the repair
+            {BUSINESS.name}&apos;s liability is limited to the cost of the repair
             service performed. We are not liable for indirect, incidental, or
             consequential damages including but not limited to lost profits,
             data, or business opportunities.
@@ -80,7 +81,7 @@ export default function TermsPage() {
             Right to Refuse Service
           </h2>
           <p className="mt-2">
-            GothTech reserves the right to refuse service at our discretion,
+            {BUSINESS.name} reserves the right to refuse service at our discretion,
             including but not limited to devices that show signs of tampering,
             stolen property, or conditions that pose a safety risk.
           </p>
@@ -92,9 +93,9 @@ export default function TermsPage() {
           </h2>
           <p className="mt-2">
             These terms are governed by and construed in accordance with the
-            laws of the State of Minnesota. Any disputes arising from these
+            laws of the State of {BUSINESS.location.stateName}. Any disputes arising from these
             terms or our services shall be subject to the exclusive jurisdiction
-            of the courts in Hennepin County, Minnesota.
+            of the courts in {BUSINESS.location.jurisdiction}.
           </p>
         </section>
 
@@ -106,11 +107,11 @@ export default function TermsPage() {
             If you have questions about these terms, contact us at:
           </p>
           <p className="mt-2">
-            GothTech
+            {BUSINESS.name}
             <br />
-            200 W Lake St #203
+            {BUSINESS.location.address}
             <br />
-            Minneapolis, MN 55408
+            {BUSINESS.location.city}, {BUSINESS.location.state} {BUSINESS.location.zip}
           </p>
         </section>
       </div>

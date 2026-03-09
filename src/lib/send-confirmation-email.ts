@@ -1,5 +1,6 @@
 import { Resend } from "resend"
 import { createCancelToken } from "./cancel-token"
+import { BUSINESS } from "@/config/business"
 
 function getResendClient(): Resend {
   const apiKey = process.env.RESEND_API_KEY
@@ -23,7 +24,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
   const { eventId, customerName, email, date, timeSlot, brand, modelName, issues } = params
 
   const cancelToken = createCancelToken(eventId)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://goth-repair.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${BUSINESS.domain}`
   const cancelUrl = `${baseUrl}/cancel?token=${encodeURIComponent(cancelToken)}`
   const deviceDisplay = brand ? `${brand} ${modelName}` : modelName
 
@@ -33,12 +34,12 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
     day: "numeric",
   })
 
-  const subject = `Your GothTech repair — ${friendlyDate} at ${timeSlot}`
+  const subject = `Your ${BUSINESS.name} repair — ${friendlyDate} at ${timeSlot}`
 
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 16px;">
       <h1 style="font-size: 20px; font-weight: 600; margin: 0 0 8px;">Your appointment is confirmed</h1>
-      <p style="color: #6b7280; margin: 0 0 24px;">We'll see you soon at GothTech.</p>
+      <p style="color: #6b7280; margin: 0 0 24px;">We'll see you soon at ${BUSINESS.name}.</p>
 
       <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
         <tr>
@@ -71,7 +72,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
       </a>
 
       <p style="margin: 32px 0 0; font-size: 12px; color: #9ca3af;">
-        GothTech · Minneapolis, MN · gothtechnology.com
+        ${BUSINESS.name} · ${BUSINESS.location.city}, ${BUSINESS.location.state} · ${BUSINESS.domain}
       </p>
     </div>
   `.trim()
@@ -87,12 +88,12 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
     "",
     `Need to cancel? Visit: ${cancelUrl}`,
     "",
-    "GothTech · Minneapolis, MN · gothtechnology.com",
+    `${BUSINESS.name} · ${BUSINESS.location.city}, ${BUSINESS.location.state} · ${BUSINESS.domain}`,
   ].join("\n")
 
   const resend = getResendClient()
   await resend.emails.send({
-    from: "bookings@gothtechnology.com",
+    from: BUSINESS.contact.fromEmail,
     to: email,
     subject,
     html,

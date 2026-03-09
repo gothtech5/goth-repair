@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChevronDown, Smartphone, Wrench } from "lucide-react"
+import { BUSINESS } from "@/config/business"
 
 const PHONE_BRANDS = [
   { name: "iPhone", href: "/book?category=phone&brand=apple-phone", image: "/images/iphone.png" },
@@ -42,8 +43,8 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border-light bg-surface/80 backdrop-blur-md">
       <nav ref={navRef} className="mx-auto flex max-w-[1120px] items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center" onClick={() => setOpen(null)}>
-          <Image src="/images/logo.png" alt="GothTech" width={40} height={40} className="size-10 -mr-2" />
-          <span className="text-xl font-semibold tracking-tight mt-1.5">othTech</span>
+          <Image src="/images/logo.png" alt={BUSINESS.name} width={40} height={40} className="size-10 -mr-2" />
+          <span className="text-xl font-semibold tracking-tight mt-1.5">{BUSINESS.name.slice(1)}</span>
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-6">
@@ -82,10 +83,10 @@ export function Header() {
           </div>
 
           <a
-            href="tel:+16129878107"
+            href={BUSINESS.contact.phoneHref}
             className="text-sm font-bold text-accent hover:text-accent-hover whitespace-nowrap"
           >
-            (612)-987-8107
+            {BUSINESS.contact.phone}
           </a>
           <div className="flex items-center gap-2">
             <Link

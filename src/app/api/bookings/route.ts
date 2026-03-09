@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getCalendarClient } from "@/lib/google-calendar"
 import { sendConfirmationEmail } from "@/lib/send-confirmation-email"
+import { BUSINESS } from "@/config/business"
 
 interface BookingPayload {
   category: string
@@ -45,8 +46,8 @@ function validatePayload(body: unknown): body is BookingPayload {
   return true
 }
 
-const OPEN_HOUR = 11
-const CLOSE_HOUR = 21
+const OPEN_HOUR = BUSINESS.hours.openHour
+const CLOSE_HOUR = BUSINESS.hours.closeHour
 
 function parseTimeSlot(date: string, timeSlot: string): { start: string; end: string } {
   const match = timeSlot.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
@@ -119,11 +120,11 @@ export async function POST(request: Request): Promise<NextResponse> {
         description,
         start: {
           dateTime: times.start,
-          timeZone: "America/Chicago",
+          timeZone: BUSINESS.location.timezone,
         },
         end: {
           dateTime: times.end,
-          timeZone: "America/Chicago",
+          timeZone: BUSINESS.location.timezone,
         },
       },
     })
