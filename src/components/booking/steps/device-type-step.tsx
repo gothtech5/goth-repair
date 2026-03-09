@@ -6,7 +6,7 @@ import type { DeviceCategory } from "@/types/booking"
 
 const CATEGORY_IMAGES: Partial<Record<DeviceCategory, string>> = {
   phone: "/images/iphone.png",
-  tablet: "/images/ipad.png",
+  tablet: "/images/samsung-tablet.png",
   computer: "/images/computer.png",
 }
 

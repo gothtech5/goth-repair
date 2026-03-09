@@ -6,9 +6,9 @@ import { CheckCircle } from "lucide-react"
 import type { DeviceCategory } from "@/types/booking"
 
 const DEVICE_CARDS: { category: DeviceCategory; label: string; image: string }[] = [
-  { category: "phone", label: "Phone", image: "/images/iphone.png" },
+  { category: "phone", label: "iPhone", image: "/images/iphone.png" },
   { category: "computer", label: "Computer", image: "/images/computer.png" },
-  { category: "tablet", label: "Tablet", image: "/images/ipad.png" },
+  { category: "tablet", label: "iPad", image: "/images/ipad.png" },
 ]
 
 const SERVICES = [

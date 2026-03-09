@@ -61,7 +61,7 @@ export const BRANDS: Brand[] = [
   { id: "apple-phone", name: "Apple", categoryId: "phone" },
   { id: "samsung-phone", name: "Samsung", categoryId: "phone" },
   { id: "google-phone", name: "Google", categoryId: "phone" },
-  { id: "oneplus-phone", name: "OnePlus", categoryId: "phone" },
+  { id: "motorola-phone", name: "Motorola", categoryId: "phone" },
   // Tablet
   { id: "apple-tablet", name: "Apple", categoryId: "tablet" },
   { id: "samsung-tablet", name: "Samsung", categoryId: "tablet" },
@@ -121,10 +121,10 @@ export const DEVICE_MODELS: DeviceModel[] = [
   { id: "pixel-8", name: "Pixel 8", brandId: "google-phone", categoryId: "phone", generation: "Pixel 8 Series" },
   { id: "pixel-7a", name: "Pixel 7a", brandId: "google-phone", categoryId: "phone", generation: "Pixel 7 Series" },
 
-  // ── OnePlus Phones ──
-  { id: "oneplus-12", name: "OnePlus 12", brandId: "oneplus-phone", categoryId: "phone", generation: "OnePlus 12 Series" },
-  { id: "oneplus-12r", name: "OnePlus 12R", brandId: "oneplus-phone", categoryId: "phone", generation: "OnePlus 12 Series" },
-  { id: "oneplus-open", name: "OnePlus Open", brandId: "oneplus-phone", categoryId: "phone", generation: "OnePlus Foldable" },
+  // ── Motorola Phones ──
+  { id: "moto-edge-2024", name: "Motorola Edge (2024)", brandId: "motorola-phone", categoryId: "phone", generation: "Motorola Edge" },
+  { id: "moto-g-stylus-5g", name: "Moto G Stylus 5G", brandId: "motorola-phone", categoryId: "phone", generation: "Moto G Series" },
+  { id: "moto-g-power-2024", name: "Moto G Power (2024)", brandId: "motorola-phone", categoryId: "phone", generation: "Moto G Series" },
 
   // ── Apple Tablets ──
   { id: "ipad-pro-m4", name: "iPad Pro (M4)", brandId: "apple-tablet", categoryId: "tablet", generation: "iPad Pro" },

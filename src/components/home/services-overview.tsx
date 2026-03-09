@@ -3,20 +3,12 @@ import Link from "next/link"
 
 const SERVICES = [
   {
-    title: "Phone Repair",
+    title: "iPhone Repair",
     image: "/images/iphone.png",
     category: "phone",
     description:
-      "Screen replacement, battery swap, charging port, camera, and more for iPhone, Samsung, Google Pixel, and OnePlus.",
+      "Screen replacement, battery swap, charging port, camera, and more for iPhone, Samsung, Google Pixel, and Motorola.",
     repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Back Glass"],
-  },
-  {
-    title: "Tablet Repair",
-    image: "/images/ipad.png",
-    category: "tablet",
-    description:
-      "Cracked screens, battery issues, and port repairs for iPad, Samsung Galaxy Tab, Amazon Fire, and more.",
-    repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Software Issues"],
   },
   {
     title: "Computer Repair",
@@ -25,6 +17,14 @@ const SERVICES = [
     description:
       "Screen repair, battery, keyboard, and software fixes for MacBooks, Dell, HP, Lenovo, and Asus.",
     repairs: ["Screen Repair", "Battery Replacement", "Keyboard Repair", "Virus Removal"],
+  },
+  {
+    title: "iPad Repair",
+    image: "/images/ipad.png",
+    category: "tablet",
+    description:
+      "Cracked screens, battery issues, and port repairs for iPad, Samsung Galaxy Tab, Amazon Fire, and more.",
+    repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Software Issues"],
   },
 ] as const
 

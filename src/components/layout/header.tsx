@@ -3,18 +3,18 @@
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ChevronDown, Smartphone, Wrench } from "lucide-react"
+import { ChevronDown, Phone, Smartphone, Wrench } from "lucide-react"
 
 const PHONE_BRANDS = [
   { name: "iPhone", href: "/book?category=phone&brand=apple-phone", image: "/images/iphone.png" },
-  { name: "Samsung", href: "/book?category=phone&brand=samsung-phone", image: "/images/iphone.png" },
-  { name: "Google", href: "/book?category=phone&brand=google-phone", image: "/images/iphone.png" },
-  { name: "OnePlus", href: "/book?category=phone&brand=oneplus-phone", image: "/images/iphone.png" },
+  { name: "Samsung", href: "/book?category=phone&brand=samsung-phone", image: "/images/samsung-phone.png" },
+  { name: "Google", href: "/book?category=phone&brand=google-phone", image: "/images/google-pixel.png" },
+  { name: "Motorola", href: "/book?category=phone&brand=motorola-phone", image: "/images/motorola.png" },
 ] as const
 
 const TECH_DEVICES = [
   { name: "iPad", href: "/book?category=tablet&brand=apple-tablet", image: "/images/ipad.png" },
-  { name: "Tablet", href: "/book?category=tablet", image: "/images/ipad.png" },
+  { name: "Tablet", href: "/book?category=tablet", image: "/images/samsung-tablet.png" },
   { name: "Computer", href: "/book?category=computer", image: "/images/computer.png" },
 ] as const
 
@@ -83,8 +83,9 @@ export function Header() {
 
           <a
             href="tel:+16129878107"
-            className="text-sm font-bold text-accent hover:text-accent-hover whitespace-nowrap"
+            className="flex items-center gap-1.5 text-sm font-bold text-accent hover:text-accent-hover whitespace-nowrap"
           >
+            <Phone className="size-4" />
             (612)-987-8107
           </a>
           <div className="flex items-center gap-2">
