@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { ChevronLeft, ChevronRight, Clock, Loader2 } from "lucide-react"
 import { cn } from "@/lib/cn"
 
@@ -47,6 +47,7 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const timeSlotsRef = useRef<HTMLDivElement>(null)
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth)
   const firstDay = getFirstDayOfWeek(viewYear, viewMonth)
@@ -79,6 +80,12 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
 
     return () => { cancelled = true }
   }, [selectedDate])
+
+  useEffect(() => {
+    if (selectedDate && !loading && slots.length > 0) {
+      timeSlotsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  }, [selectedDate, loading, slots])
 
   const morningSlots = slots.filter((s) => s.time.includes("AM"))
   const afternoonSlots = slots.filter((s) => s.time.includes("PM"))
@@ -202,7 +209,7 @@ export function ScheduleStep({ onSelect, onBack }: ScheduleStepProps) {
         </div>
 
         {/* Time Slots */}
-        <div className="flex flex-col">
+        <div ref={timeSlotsRef} className="flex flex-col scroll-mt-4">
           {!selectedDate && (
             <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-border-light py-16 text-center">
               <Clock className="size-8 text-text-tertiary/50" />
