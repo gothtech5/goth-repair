@@ -6,25 +6,28 @@ const SERVICES = [
     title: "Phone Repair",
     image: "/images/iphone.png",
     category: "phone",
+    cta: "Book phone repair",
     description:
-      "Screen replacement, battery swap, charging port, camera, and more.",
-    repairs: ["iPhone", "Samsung Galaxy", "Google Pixel", "Motorola"],
+      "Screen replacement, battery swap, charging port, camera, and more for iPhone, Samsung, Google Pixel, and Motorola.",
+    repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Back Glass", "Camera Repair", "Speaker Fix"],
   },
   {
     title: "Computer Repair",
     image: "/images/computer.png",
     category: "computer",
+    cta: "Book computer repair",
     description:
-      "Screen repair, battery, keyboard, and software fixes.",
-    repairs: ["MacBook", "Dell", "HP", "Lenovo", "Asus"],
+      "Screen repair, battery, keyboard, and software fixes for MacBooks, Dell, HP, Lenovo, and Asus.",
+    repairs: ["Screen Repair", "Battery Replacement", "Keyboard Repair", "Virus Removal", "Data Recovery", "OS Reinstall"],
   },
   {
     title: "Tablet Repair",
     image: "/images/ipad.png",
     category: "tablet",
+    cta: "Book tablet repair",
     description:
-      "Cracked screens, battery issues, and port repairs.",
-    repairs: ["iPad", "Samsung Galaxy Tab", "Amazon Fire", "Lenovo"],
+      "Cracked screens, battery issues, and port repairs for iPad, Samsung Galaxy Tab, Amazon Fire, and more.",
+    repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Software Issues", "Button Repair", "Glass Replacement"],
   },
 ] as const
 
@@ -32,9 +35,15 @@ export function ServicesOverview() {
   return (
     <section id="services" className="bg-surface-secondary px-6 py-16 md:py-24">
       <div className="mx-auto max-w-[1120px]">
-        <h2 className="text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
+        <p className="text-center text-sm font-semibold uppercase tracking-wider text-accent">
+          Services
+        </p>
+        <h2 className="mt-3 text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
           What we repair
         </h2>
+        <p className="mx-auto mt-4 max-w-lg text-center text-text-secondary text-pretty">
+          From cracked screens to dead batteries, we fix the devices Minneapolis depends on.
+        </p>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((service) => (
             <Link
@@ -57,15 +66,15 @@ export function ServicesOverview() {
               <p className="mt-2 text-sm text-text-secondary text-pretty">
                 {service.description}
               </p>
-              <ul className="mt-4 space-y-1.5">
+              <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {service.repairs.map((repair) => (
-                  <li key={repair} className="text-sm text-text-tertiary">
+                  <li key={repair} className="text-sm text-text-tertiary before:mr-1.5 before:inline-block before:size-1.5 before:rounded-full before:bg-accent before:align-middle before:content-['']">
                     {repair}
                   </li>
                 ))}
               </ul>
               <p className="mt-auto pt-5 text-sm font-medium text-accent group-hover:underline">
-                Book now
+                {service.cta} &rarr;
               </p>
             </Link>
           ))}
