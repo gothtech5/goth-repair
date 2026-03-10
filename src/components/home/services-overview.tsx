@@ -53,7 +53,7 @@ export function ServicesOverview() {
         <p className="mx-auto mt-4 max-w-lg text-center text-text-secondary text-pretty">
           From cracked screens to dead batteries, we fix the devices Minneapolis depends on.
         </p>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2">
           {SERVICES.map((service) => (
             <Link
               key={service.title}
