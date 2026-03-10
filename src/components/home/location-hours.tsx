@@ -12,9 +12,15 @@ export function LocationHours() {
   return (
     <section id="location" className="px-6 py-16 md:py-24">
       <div className="mx-auto max-w-[1120px]">
-        <h2 className="text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
+        <p className="text-center text-sm font-semibold uppercase tracking-wider text-accent">
+          Location
+        </p>
+        <h2 className="mt-3 text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
           Visit us
         </h2>
+        <p className="mx-auto mt-4 max-w-lg text-center text-text-secondary text-pretty">
+          Conveniently located in Minneapolis, MN. Walk in any day of the week.
+        </p>
         <div className="mt-12 grid gap-8 md:grid-cols-2">
           <div>
             <h3 className="text-lg font-medium">GothTech</h3>
@@ -32,7 +38,8 @@ export function LocationHours() {
               <span className="text-text-tertiary">(257 reviews)</span>
             </a>
             <div className="mt-3 flex items-center gap-2 text-sm">
-              <a href="tel:+16129878107" className="font-medium hover:text-accent">
+              <span className="text-text-secondary">Call us:</span>
+              <a href="tel:+16129878107" className="font-medium text-accent hover:text-accent-hover">
                 (612)-987-8107
               </a>
             </div>

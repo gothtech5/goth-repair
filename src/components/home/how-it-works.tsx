@@ -4,13 +4,13 @@ const STEPS = [
   {
     number: "1",
     title: "Book Online",
-    description: "Select your device, describe the issue, and pick a time that works.",
+    description: "Select your device, describe the issue, and pick a time that works for you.",
     href: "/book",
   },
   {
     number: "2",
     title: "Drop Off Your Device",
-    description: "Bring it to our Minneapolis location. Free diagnostics included.",
+    description: "Bring it to our Minneapolis location. We'll run free diagnostics and give you an honest quote.",
   },
   {
     number: "3",
@@ -23,9 +23,15 @@ export function HowItWorks() {
   return (
     <section id="how-it-works" className="px-6 py-16 md:py-24">
       <div className="mx-auto max-w-[1120px]">
-        <h2 className="text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
+        <p className="text-center text-sm font-semibold uppercase tracking-wider text-accent">
+          Process
+        </p>
+        <h2 className="mt-3 text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
           How it works
         </h2>
+        <p className="mx-auto mt-4 max-w-lg text-center text-text-secondary text-pretty">
+          Three simple steps to get your device working like new.
+        </p>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {STEPS.map((step) => {
             const content = (
