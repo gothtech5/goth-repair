@@ -9,7 +9,7 @@ const SERVICES = [
     cta: "Book phone repair",
     description:
       "Screen replacement, battery swap, charging port, camera, and more for iPhone, Samsung, Google Pixel, and Motorola.",
-    repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Back Glass", "Camera Repair", "Speaker Fix"],
+    repairs: ["Screen Repair", "Battery Swap", "Charging Port", "Back Glass", "Camera Repair", "Speaker Fix"],
   },
   {
     title: "Computer Repair",
@@ -18,7 +18,7 @@ const SERVICES = [
     cta: "Book computer repair",
     description:
       "Screen repair, battery, keyboard, and software fixes for MacBooks, Dell, HP, Lenovo, and Asus.",
-    repairs: ["Screen Repair", "Battery Replacement", "Keyboard Repair", "Virus Removal", "Data Recovery", "OS Reinstall"],
+    repairs: ["Screen Repair", "Battery Swap", "Keyboard Repair", "Virus Removal", "Data Recovery", "OS Reinstall"],
   },
   {
     title: "Tablet Repair",
@@ -27,7 +27,7 @@ const SERVICES = [
     cta: "Book tablet repair",
     description:
       "Cracked screens, battery issues, and port repairs for iPad, Samsung Galaxy Tab, Amazon Fire, and more.",
-    repairs: ["Screen Repair", "Battery Replacement", "Charging Port", "Software Issues", "Button Repair", "Glass Replacement"],
+    repairs: ["Screen Repair", "Battery Swap", "Charging Port", "Software Fix", "Button Repair", "Glass Repair"],
   },
 ] as const
 
