@@ -1,4 +1,4 @@
-export type DeviceCategory = "phone" | "tablet" | "computer"
+export type DeviceCategory = "phone" | "tablet" | "computer" | "smartwatch"
 
 export type BookingStep =
   | "device"

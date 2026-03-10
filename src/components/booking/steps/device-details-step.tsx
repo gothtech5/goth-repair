@@ -27,6 +27,7 @@ export function DeviceDetailsStep({
     phone: { label: "phone", tagline: "We've fixed over 5,000 screens and counting." },
     tablet: { label: "tablet", tagline: "You're in good hands \u2014 we do 5,000 repairs every month." },
     computer: { label: "computer", tagline: "From MacBooks to ThinkPads, we've seen it all." },
+    smartwatch: { label: "smartwatch", tagline: "Apple Watch experts \u2014 from Series 1 to Ultra." },
   }
 
   const { label: categoryLabel, tagline } = CATEGORY_COPY[category]

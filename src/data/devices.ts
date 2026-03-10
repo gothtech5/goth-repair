@@ -52,6 +52,11 @@ export const DEVICE_CATEGORIES: DeviceCategoryInfo[] = [
     name: "Computer",
     description: "Screen repair, battery, keyboard, and software issues",
   },
+  {
+    id: "smartwatch",
+    name: "Smartwatch",
+    description: "Screen, battery, and band repairs",
+  },
 ]
 
 // ─── Brands ───
@@ -74,6 +79,8 @@ export const BRANDS: Brand[] = [
   { id: "hp-computer", name: "HP", categoryId: "computer" },
   { id: "lenovo-computer", name: "Lenovo", categoryId: "computer" },
   { id: "asus-computer", name: "Asus", categoryId: "computer" },
+  // Smartwatch
+  { id: "apple-smartwatch", name: "Apple", categoryId: "smartwatch" },
 ]
 
 // ─── Models ───
@@ -505,6 +512,30 @@ export const DEVICE_MODELS: DeviceModel[] = [
   { id: "asus-zenbook-s16", name: "ZenBook S 16", brandId: "asus-computer", categoryId: "computer", generation: "ZenBook" },
   { id: "asus-rog-zephyrus-g16", name: "ROG Zephyrus G16", brandId: "asus-computer", categoryId: "computer", generation: "ROG" },
   { id: "asus-vivobook-15", name: "VivoBook 15", brandId: "asus-computer", categoryId: "computer", generation: "VivoBook" },
+
+  // ══════════════════════════════════════
+  // APPLE WATCH
+  // ══════════════════════════════════════
+
+  // ── Apple Watch Ultra ──
+  { id: "apple-watch-ultra-2", name: "Apple Watch Ultra 2", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Ultra" },
+  { id: "apple-watch-ultra", name: "Apple Watch Ultra", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Ultra" },
+
+  // ── Apple Watch Series ──
+  { id: "apple-watch-series-10", name: "Apple Watch Series 10", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-9", name: "Apple Watch Series 9", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-8", name: "Apple Watch Series 8", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-7", name: "Apple Watch Series 7", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-6", name: "Apple Watch Series 6", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-5", name: "Apple Watch Series 5", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-4", name: "Apple Watch Series 4", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-3", name: "Apple Watch Series 3", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-2", name: "Apple Watch Series 2", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+  { id: "apple-watch-series-1", name: "Apple Watch Series 1", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch Series" },
+
+  // ── Apple Watch SE ──
+  { id: "apple-watch-se-2nd", name: "Apple Watch SE (2nd Gen)", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch SE" },
+  { id: "apple-watch-se-1st", name: "Apple Watch SE (1st Gen)", brandId: "apple-smartwatch", categoryId: "smartwatch", generation: "Apple Watch SE" },
 ]
 
 // ─── Repair Issues ───
@@ -514,7 +545,7 @@ export const REPAIR_ISSUES: RepairIssue[] = [
     id: "screen",
     name: "Screen Repair",
     description: "Cracked, shattered, or unresponsive display",
-    applicableTo: ["phone", "tablet", "computer"],
+    applicableTo: ["phone", "tablet", "computer", "smartwatch"],
     estimatedPrice: "From $79",
     estimatedTime: "1-2 hours",
   },
@@ -522,7 +553,7 @@ export const REPAIR_ISSUES: RepairIssue[] = [
     id: "battery",
     name: "Battery Replacement",
     description: "Battery draining fast or won't hold a charge",
-    applicableTo: ["phone", "tablet", "computer"],
+    applicableTo: ["phone", "tablet", "computer", "smartwatch"],
     estimatedPrice: "From $49",
     estimatedTime: "30-60 min",
   },
@@ -562,7 +593,7 @@ export const REPAIR_ISSUES: RepairIssue[] = [
     id: "water-damage",
     name: "Water Damage",
     description: "Device exposed to liquid or moisture",
-    applicableTo: ["phone", "tablet"],
+    applicableTo: ["phone", "tablet", "smartwatch"],
     estimatedPrice: "From $79",
     estimatedTime: "24-48 hours",
   },
@@ -570,7 +601,7 @@ export const REPAIR_ISSUES: RepairIssue[] = [
     id: "software",
     name: "Software Issues",
     description: "Frozen, stuck on logo, or software glitches",
-    applicableTo: ["phone", "tablet", "computer"],
+    applicableTo: ["phone", "tablet", "computer", "smartwatch"],
     estimatedPrice: "From $39",
     estimatedTime: "30-60 min",
   },

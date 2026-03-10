@@ -8,6 +8,7 @@ const CATEGORY_IMAGES: Partial<Record<DeviceCategory, string>> = {
   phone: "/images/iphone.png",
   tablet: "/images/samsung-tablet.png",
   computer: "/images/computer.png",
+  smartwatch: "/images/smartwatch.png",
 }
 
 interface DeviceTypeStepProps {

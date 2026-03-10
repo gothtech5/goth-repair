@@ -16,6 +16,7 @@ const TECH_DEVICES = [
   { name: "iPad", href: "/book?category=tablet&brand=apple-tablet", image: "/images/ipad.png" },
   { name: "Tablet", href: "/book?category=tablet", image: "/images/samsung-tablet.png" },
   { name: "Computer", href: "/book?category=computer", image: "/images/computer.png" },
+  { name: "Smartwatch", href: "/book?category=smartwatch", image: "/images/smartwatch.png" },
 ] as const
 
 type DropdownId = "phone" | "tech" | null
