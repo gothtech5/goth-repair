@@ -10,7 +10,7 @@ const STEPS = [
   {
     number: "2",
     title: "Drop Off Your Device",
-    description: "Bring it to our Minneapolis location. We'll run free diagnostics and give you an honest quote.",
+    description: "Bring it in. We'll run free diagnostics and give you an honest quote.",
   },
   {
     number: "3",
