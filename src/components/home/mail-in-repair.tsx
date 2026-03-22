@@ -27,7 +27,7 @@ export function MailInRepair() {
           Nationwide
         </p>
         <h2 className="mt-3 text-center text-3xl font-semibold tracking-tight text-balance md:text-4xl">
-          Not in Minnesota? Ship it to us.
+          Not in Minneapolis? Ship it to us.
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-center text-text-secondary text-pretty">
           We repair devices from customers across the country. Request a shipping label, send in your phone or iPad, and we'll ship it back once it's fixed.
