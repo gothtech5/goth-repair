@@ -2,23 +2,46 @@ import { NextResponse } from "next/server"
 import { getCalendarClient } from "@/lib/google-calendar"
 import { sendConfirmationEmail } from "@/lib/send-confirmation-email"
 
+interface ShippingAddress {
+  street: string
+  apartment: string
+  city: string
+  state: string
+  zip: string
+}
+
+interface ContactPayload {
+  firstName: string
+  lastName: string
+  phone: string
+  email: string
+  notes: string
+  agreedToTerms: boolean
+  marketingOptIn: boolean
+}
+
 interface BookingPayload {
   category: string
   brand: string
   modelName: string
   issues: string[]
   issueDescription: string
-  date: string
-  timeSlot: string
-  contact: {
-    firstName: string
-    lastName: string
-    phone: string
-    email: string
-    notes: string
-    agreedToTerms: boolean
-    marketingOptIn: boolean
-  }
+  repairType: "walk-in" | "mail-in"
+  date: string | null
+  timeSlot: string | null
+  shippingAddress: ShippingAddress | null
+  contact: ContactPayload
+}
+
+function validateContact(c: unknown): c is ContactPayload {
+  if (!c || typeof c !== "object") return false
+  const contact = c as Record<string, unknown>
+  if (typeof contact.firstName !== "string" || !contact.firstName.trim()) return false
+  if (typeof contact.lastName !== "string" || !contact.lastName.trim()) return false
+  if (typeof contact.phone !== "string" || !contact.phone.trim()) return false
+  if (typeof contact.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) return false
+  if (contact.agreedToTerms !== true) return false
+  return true
 }
 
 function validatePayload(body: unknown): body is BookingPayload {
@@ -29,18 +52,25 @@ function validatePayload(body: unknown): body is BookingPayload {
   if (typeof b.brand !== "string") return false
   if (typeof b.modelName !== "string" || !b.modelName) return false
   if (!Array.isArray(b.issues) || b.issues.length === 0) return false
-  if (typeof b.date !== "string" || !b.date) return false
-  if (typeof b.timeSlot !== "string" || !b.timeSlot) return false
+  if (!validateContact(b.contact)) return false
 
-  const c = b.contact
-  if (!c || typeof c !== "object") return false
-  const contact = c as Record<string, unknown>
+  const repairType = b.repairType
+  if (repairType !== "walk-in" && repairType !== "mail-in") return false
 
-  if (typeof contact.firstName !== "string" || !contact.firstName.trim()) return false
-  if (typeof contact.lastName !== "string" || !contact.lastName.trim()) return false
-  if (typeof contact.phone !== "string" || !contact.phone.trim()) return false
-  if (typeof contact.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) return false
-  if (contact.agreedToTerms !== true) return false
+  if (repairType === "walk-in") {
+    if (typeof b.date !== "string" || !b.date) return false
+    if (typeof b.timeSlot !== "string" || !b.timeSlot) return false
+  }
+
+  if (repairType === "mail-in") {
+    const addr = b.shippingAddress
+    if (!addr || typeof addr !== "object") return false
+    const a = addr as Record<string, unknown>
+    if (typeof a.street !== "string" || !a.street) return false
+    if (typeof a.city !== "string" || !a.city) return false
+    if (typeof a.state !== "string" || !a.state) return false
+    if (typeof a.zip !== "string" || !a.zip) return false
+  }
 
   return true
 }
@@ -60,7 +90,7 @@ function parseTimeSlot(date: string, timeSlot: string): { start: string; end: st
   if (period === "AM" && hours === 12) hours = 0
 
   if (hours < OPEN_HOUR || hours >= CLOSE_HOUR) {
-    throw new Error("Outside business hours (11 AM – 9 PM)")
+    throw new Error("Outside business hours (11 AM - 9 PM)")
   }
 
   const hh = hours.toString().padStart(2, "0")
@@ -86,13 +116,36 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 })
   }
 
-  const { contact, category, brand, modelName, issues, issueDescription, date, timeSlot } = body
+  const { contact, brand, modelName, issues, issueDescription, repairType } = body
   const customerName = `${contact.firstName} ${contact.lastName}`
   const issuesText = issues.join(", ")
 
+  if (repairType === "mail-in") {
+    try {
+      await sendConfirmationEmail({
+        type: "mail-in",
+        customerName,
+        email: contact.email,
+        phone: contact.phone,
+        brand,
+        modelName,
+        issues: issuesText,
+        issueDescription,
+        shippingAddress: body.shippingAddress!,
+      })
+
+      return NextResponse.json({ success: true })
+    } catch (err) {
+      console.error("Mail-in email error:", err)
+      return NextResponse.json({ error: "Failed to process mail-in request" }, { status: 500 })
+    }
+  }
+
+  const { date, timeSlot, category } = body
+
   let times: { start: string; end: string }
   try {
-    times = parseTimeSlot(date, timeSlot)
+    times = parseTimeSlot(date!, timeSlot!)
   } catch {
     return NextResponse.json({ error: "Invalid date or time" }, { status: 400 })
   }
@@ -132,12 +185,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     if (eventId) {
       try {
         await sendConfirmationEmail({
+          type: "walk-in",
           eventId,
           customerName,
           email: contact.email,
-          date,
-          timeSlot,
-          category,
+          date: date!,
+          timeSlot: timeSlot!,
           brand,
           modelName,
           issues: issuesText,

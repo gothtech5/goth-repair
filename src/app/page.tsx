@@ -2,6 +2,7 @@ import { Hero } from "@/components/home/hero"
 import { ServicesOverview } from "@/components/home/services-overview"
 import { HowItWorks } from "@/components/home/how-it-works"
 import { TrustSignals } from "@/components/home/trust-signals"
+import { MailInRepair } from "@/components/home/mail-in-repair"
 import { LocationHours } from "@/components/home/location-hours"
 
 const LOCAL_BUSINESS_JSONLD = {
@@ -9,7 +10,7 @@ const LOCAL_BUSINESS_JSONLD = {
   "@type": "LocalBusiness",
   name: "GothTech",
   description:
-    "Expert repair services for iPhones, iPads, Apple Watches, and Macs in Minneapolis.",
+    "Certified technicians with over 10,000 screen repairs completed. Phone repair and iPad repair in Minneapolis. Mail-in repairs available nationwide.",
   url: "https://gothtech.repair",
   telephone: "",
   address: {
@@ -65,6 +66,7 @@ export default function Home() {
       <ServicesOverview />
       <HowItWorks />
       <TrustSignals />
+      <MailInRepair />
       <LocationHours />
     </>
   )

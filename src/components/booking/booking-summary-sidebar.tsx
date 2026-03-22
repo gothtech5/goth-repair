@@ -19,7 +19,9 @@ export function BookingSummarySidebar({ state, onChangeStep }: BookingSummarySid
   const showDevice = currentIndex > 0 && category
   const showDetails = currentIndex > 1 && model
   const showIssues = currentIndex > 2 && selectedIssues.length > 0
-  const showSchedule = currentIndex > 3 && state.date && state.timeSlot
+  const isMailIn = state.repairType === "mail-in"
+  const showSchedule = !isMailIn && currentIndex > 3 && state.date && state.timeSlot
+  const showShipping = isMailIn && currentIndex > 3 && state.shippingAddress
   const showContact = currentIndex > 4 && state.contact
 
   return (
@@ -58,6 +60,14 @@ export function BookingSummarySidebar({ state, onChangeStep }: BookingSummarySid
             <SummaryItem
               label="Appointment"
               value={`${state.date} at ${state.timeSlot}`}
+              canChange={currentIndex > 3}
+              onChangeClick={() => onChangeStep("schedule")}
+            />
+          )}
+          {showShipping && state.shippingAddress && (
+            <SummaryItem
+              label="Ship to"
+              value={`${state.shippingAddress.city}, ${state.shippingAddress.state} ${state.shippingAddress.zip}`}
               canChange={currentIndex > 3}
               onChangeClick={() => onChangeStep("schedule")}
             />

@@ -43,6 +43,12 @@ export function LocationHours() {
                 (612)-987-8107
               </a>
             </div>
+            <div className="mt-2 flex items-center gap-2 text-sm">
+              <span className="text-text-secondary">Email:</span>
+              <a href="mailto:gothtechnology5@gmail.com" className="font-medium text-accent hover:text-accent-hover">
+                gothtechnology5@gmail.com
+              </a>
+            </div>
             <address className="mt-3 space-y-1 text-sm not-italic text-text-secondary">
               <p>200 W Lake St #203</p>
               <p>Minneapolis, MN 55408</p>

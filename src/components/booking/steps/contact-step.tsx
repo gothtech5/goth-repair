@@ -51,7 +51,9 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
         Last step — enter your contact info
       </h2>
       <p className="mt-2 text-text-secondary">
-        We&apos;ll use this to confirm your appointment. No payment until after the repair.
+        {state.repairType === "mail-in"
+          ? "We'll use this to coordinate your mail-in repair. No payment until after the repair."
+          : "We'll use this to confirm your appointment. No payment until after the repair."}
       </p>
 
       <form id="contact-form" ref={formRef} onSubmit={handleSubmit} className="mt-8 max-w-lg space-y-5">
@@ -128,7 +130,7 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
             disabled={submitting}
             className="rounded-xl bg-accent px-8 py-3 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
           >
-            {submitting ? "Submitting..." : "Confirm Booking"}
+            {submitting ? "Submitting..." : state.repairType === "mail-in" ? "Submit Mail-In Request" : "Confirm Booking"}
           </button>
         </div>
       </div>

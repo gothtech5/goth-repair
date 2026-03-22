@@ -1,5 +1,7 @@
 export type DeviceCategory = "phone" | "tablet" | "computer" | "smartwatch"
 
+export type RepairType = "walk-in" | "mail-in"
+
 export type BookingStep =
   | "device"
   | "model"
@@ -18,6 +20,14 @@ export interface ContactInfo {
   marketingOptIn: boolean
 }
 
+export interface ShippingAddress {
+  street: string
+  apartment: string
+  city: string
+  state: string
+  zip: string
+}
+
 export interface BookingState {
   step: BookingStep
   category: DeviceCategory | null
@@ -25,8 +35,10 @@ export interface BookingState {
   modelId: string | null
   issues: string[]
   issueDescription: string
+  repairType: RepairType | null
   date: string | null
   timeSlot: string | null
+  shippingAddress: ShippingAddress | null
   contact: ContactInfo | null
 }
 
@@ -35,7 +47,9 @@ export type BookingAction =
   | { type: "SET_BRAND"; payload: string }
   | { type: "SET_MODEL"; payload: string }
   | { type: "SET_ISSUES"; payload: { issues: string[]; description: string } }
+  | { type: "SET_REPAIR_TYPE"; payload: RepairType }
   | { type: "SET_SCHEDULE"; payload: { date: string; timeSlot: string } }
+  | { type: "SET_SHIPPING_ADDRESS"; payload: ShippingAddress }
   | { type: "SET_CONTACT"; payload: ContactInfo }
   | { type: "GO_TO_STEP"; payload: BookingStep }
   | { type: "GO_BACK" }
@@ -59,6 +73,11 @@ export const STEP_LABELS: Record<BookingStep, string> = {
   confirmation: "Confirm",
 }
 
+export function getStepLabel(step: BookingStep, repairType: RepairType | null): string {
+  if (step === "schedule" && repairType === "mail-in") return "Shipping"
+  return STEP_LABELS[step]
+}
+
 export const INITIAL_STATE: BookingState = {
   step: "device",
   category: null,
@@ -66,8 +85,10 @@ export const INITIAL_STATE: BookingState = {
   modelId: null,
   issues: [],
   issueDescription: "",
+  repairType: null,
   date: null,
   timeSlot: null,
+  shippingAddress: null,
   contact: null,
 }
 
@@ -97,12 +118,26 @@ export function bookingReducer(
         issues: action.payload.issues,
         issueDescription: action.payload.description,
       }
+    case "SET_REPAIR_TYPE":
+      return {
+        ...state,
+        repairType: action.payload,
+        date: null,
+        timeSlot: null,
+        shippingAddress: null,
+      }
     case "SET_SCHEDULE":
       return {
         ...state,
         step: "contact",
         date: action.payload.date,
         timeSlot: action.payload.timeSlot,
+      }
+    case "SET_SHIPPING_ADDRESS":
+      return {
+        ...state,
+        step: "contact",
+        shippingAddress: action.payload,
       }
     case "SET_CONTACT":
       return { ...state, step: "confirmation", contact: action.payload }
@@ -112,6 +147,9 @@ export function bookingReducer(
       const currentIndex = STEPS.indexOf(state.step)
       if (currentIndex <= 0) return state
       const prevStep = STEPS[currentIndex - 1]
+      if (prevStep === "schedule" && state.repairType) {
+        return { ...state, step: prevStep }
+      }
       return { ...state, step: prevStep }
     }
     case "RESET":

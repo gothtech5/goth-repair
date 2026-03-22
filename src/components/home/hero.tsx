@@ -56,10 +56,10 @@ export function Hero() {
               )}
             </div>
             <h1 className="mt-3 text-[36px] font-semibold leading-tight tracking-tight text-balance sm:text-[44px] md:text-[48px]">
-              Expert repairs. Walk in, walk out.
+              Phone repair &amp; iPad repair in Minneapolis.
             </h1>
             <p className="mt-4 text-lg text-text-secondary text-pretty">
-              Quality repairs for the devices you depend on most. Walk in or book online — free diagnostics, every time.
+              Certified technicians with over 10,000 screen repairs completed. Walk in or book online — free diagnostics, every time. Not local? We offer mail-in repair nationwide.
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-4">

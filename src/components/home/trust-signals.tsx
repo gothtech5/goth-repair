@@ -5,7 +5,7 @@ const SIGNALS: { icon: LucideIcon; title: string; description: string }[] = [
   { icon: ShieldCheck, title: "Free Diagnostics", description: "No charge to assess the issue" },
   { icon: Shield, title: "90-Day Warranty", description: "On all parts and labor" },
   { icon: Clock, title: "Same-Day Repairs", description: "Most repairs done in hours" },
-  { icon: Zap, title: "Certified Technicians", description: "Experienced device specialists" },
+  { icon: Zap, title: "Certified Technicians", description: "Over 10,000 screen repairs completed" },
 ]
 
 export function TrustSignals() {

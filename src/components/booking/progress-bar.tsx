@@ -1,14 +1,15 @@
 "use client"
 
 import { cn } from "@/lib/cn"
-import { STEPS, STEP_LABELS, type BookingStep } from "@/types/booking"
+import { STEPS, getStepLabel, type BookingStep, type RepairType } from "@/types/booking"
 
 interface ProgressBarProps {
   currentStep: BookingStep
+  repairType?: RepairType | null
   onStepClick: (step: BookingStep) => void
 }
 
-export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
+export function ProgressBar({ currentStep, repairType = null, onStepClick }: ProgressBarProps) {
   const currentIndex = STEPS.indexOf(currentStep)
 
   return (
@@ -19,12 +20,13 @@ export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
       aria-valuenow={currentIndex + 1}
       aria-valuemin={1}
       aria-valuemax={STEPS.length}
-      aria-valuetext={`Step ${currentIndex + 1} of ${STEPS.length}: ${STEP_LABELS[currentStep]}`}
+      aria-valuetext={`Step ${currentIndex + 1} of ${STEPS.length}: ${getStepLabel(currentStep, repairType)}`}
     >
       {STEPS.map((step, i) => {
         const isCompleted = i < currentIndex
         const isCurrent = i === currentIndex
         const isClickable = isCompleted
+        const label = getStepLabel(step, repairType)
 
         return (
           <div key={step} className="flex flex-1 items-center">
@@ -33,7 +35,7 @@ export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
                 type="button"
                 disabled={!isClickable}
                 onClick={() => isClickable && onStepClick(step)}
-                aria-label={`${STEP_LABELS[step]}${isCompleted ? " (completed)" : isCurrent ? " (current)" : ""}`}
+                aria-label={`${label}${isCompleted ? " (completed)" : isCurrent ? " (current)" : ""}`}
                 className={cn(
                   "flex size-8 items-center justify-center rounded-full text-xs font-medium transition-colors",
                   isCompleted && "bg-accent text-white cursor-pointer",
@@ -50,7 +52,7 @@ export function ProgressBar({ currentStep, onStepClick }: ProgressBarProps) {
                   isCurrent ? "font-medium text-text-primary" : "text-text-tertiary",
                 )}
               >
-                {STEP_LABELS[step]}
+                {label}
               </span>
             </div>
             {i < STEPS.length - 1 && (

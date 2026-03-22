@@ -8,9 +8,9 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "GothTech | Expert Repair Services for Phones and iPads",
+  title: "GothTech | Phone Repair Minneapolis & iPad Repair Minneapolis",
   description:
-    "Fast, reliable Apple device repair in Minneapolis. iPhone, iPad, and Apple Watch screen repair, battery replacement, and more. Free diagnostics.",
+    "Certified technicians with over 10,000 screen repairs completed. Phone repair Minneapolis, iPad repair Minneapolis — same-day service, free diagnostics. Mail-in repairs available nationwide.",
   metadataBase: new URL("https://gothtech.repair"),
   alternates: { canonical: "/" },
   icons: {
@@ -18,9 +18,9 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "GothTech | Expert Repair Services for Phones and iPads",
+    title: "GothTech | Phone Repair Minneapolis & iPad Repair Minneapolis",
     description:
-      "Fast, reliable Apple device repair in Minneapolis. Screen repair, battery replacement, and more. Free diagnostics.",
+      "Certified technicians with over 10,000 screen repairs completed. Phone repair Minneapolis, iPad repair Minneapolis — same-day service, free diagnostics.",
     url: "https://gothtech.repair",
     siteName: "GothTech",
     locale: "en_US",
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GothTech | Expert Repair Services for Phones and iPads",
-    description: "Fast, reliable Apple device repair in Minneapolis. Free diagnostics.",
+    title: "GothTech | Phone Repair Minneapolis & iPad Repair Minneapolis",
+    description: "Certified technicians with over 10,000 screen repairs completed. Phone and iPad repair in Minneapolis. Free diagnostics.",
   },
 }
 
