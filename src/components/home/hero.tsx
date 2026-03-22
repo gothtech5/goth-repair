@@ -59,7 +59,7 @@ export function Hero() {
               Phone repair &amp; iPad repair in Minneapolis.
             </h1>
             <p className="mt-4 text-lg text-text-secondary text-pretty">
-              Certified technicians with over 10,000 screen repairs completed. Walk in or book online — free diagnostics, every time. Not local? We offer mail-in repair nationwide.
+              Certified technicians with over 10,000 screen repairs completed. Walk in or book online — free diagnostics, every time. Not in Minneapolis? We offer mail-in repair nationwide.
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-4">
