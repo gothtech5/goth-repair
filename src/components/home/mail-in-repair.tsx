@@ -55,10 +55,10 @@ export function MailInRepair() {
         </div>
         <div className="mt-6 text-center">
           <Link
-            href="/book?type=mail-in"
+            href="/book"
             className="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
           >
-            Start a Mail-In Repair
+            Start a Repair
           </Link>
         </div>
       </div>

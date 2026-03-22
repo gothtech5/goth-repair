@@ -48,6 +48,7 @@ export type BookingAction =
   | { type: "SET_MODEL"; payload: string }
   | { type: "SET_ISSUES"; payload: { issues: string[]; description: string } }
   | { type: "SET_REPAIR_TYPE"; payload: RepairType }
+  | { type: "CLEAR_REPAIR_TYPE" }
   | { type: "SET_SCHEDULE"; payload: { date: string; timeSlot: string } }
   | { type: "SET_SHIPPING_ADDRESS"; payload: ShippingAddress }
   | { type: "SET_CONTACT"; payload: ContactInfo }
@@ -122,6 +123,14 @@ export function bookingReducer(
       return {
         ...state,
         repairType: action.payload,
+        date: null,
+        timeSlot: null,
+        shippingAddress: null,
+      }
+    case "CLEAR_REPAIR_TYPE":
+      return {
+        ...state,
+        repairType: null,
         date: null,
         timeSlot: null,
         shippingAddress: null,

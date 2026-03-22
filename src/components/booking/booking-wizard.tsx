@@ -41,10 +41,6 @@ export function BookingWizard() {
       }
     }
 
-    const type = searchParams.get("type") as RepairType | null
-    if (type === "mail-in") {
-      dispatch({ type: "SET_REPAIR_TYPE", payload: "mail-in" })
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -144,7 +140,7 @@ export function BookingWizard() {
               onSelect={(date, timeSlot) =>
                 dispatch({ type: "SET_SCHEDULE", payload: { date, timeSlot } })
               }
-              onBack={() => dispatch({ type: "SET_REPAIR_TYPE", payload: state.repairType! })}
+              onBack={() => dispatch({ type: "CLEAR_REPAIR_TYPE" })}
             />
           )}
           {state.step === "schedule" && isMailIn && (
@@ -152,7 +148,7 @@ export function BookingWizard() {
               onSubmit={(address: ShippingAddress) =>
                 dispatch({ type: "SET_SHIPPING_ADDRESS", payload: address })
               }
-              onBack={() => dispatch({ type: "SET_REPAIR_TYPE", payload: state.repairType! })}
+              onBack={() => dispatch({ type: "CLEAR_REPAIR_TYPE" })}
             />
           )}
           {state.step === "contact" && (
