@@ -1,9 +1,13 @@
 import Link from "next/link"
+import { CalendarCheck, Package, CheckCircle } from "lucide-react";
+
 
 const STEPS = [
   {
     number: "1",
     title: "Book Online",
+        icon: CalendarCheck,
+
     description: "Select your device, describe the issue, and pick a time that works for you.",
     href: "/book",
   },
@@ -11,11 +15,15 @@ const STEPS = [
     number: "2",
     title: "Drop Off Your Device",
     description: "Bring it in. We'll run free diagnostics and give you an honest quote.",
+        icon: Package,
+
   },
   {
     number: "3",
-    title: "Get It Back",
+    title:"Get It Back Repaired", 
     description: "Most repairs are done the same day. We'll text you when it's ready.",
+        icon: CheckCircle,
+
   },
 ] as const
 
@@ -36,9 +44,9 @@ export function HowItWorks() {
           {STEPS.map((step) => {
             const content = (
               <div className="rounded-2xl border border-border-light bg-surface p-6 text-center">
-                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-accent text-lg font-semibold text-white">
+ className="mx-auto flex size-12 items-center justify-center rounded-full bg-accent text-lg font-semibold text-white">
                   {step.number}
-                </div>
+                </d                <diviv>
                 <h3 className="mt-5 text-lg font-semibold">{step.title}</h3>
                 <p className="mt-2 text-sm text-text-secondary text-pretty">
                   {step.description}
