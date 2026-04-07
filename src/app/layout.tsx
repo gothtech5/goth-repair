@@ -60,6 +60,24 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Google Ads Pixel */}
+        <Script
+          id="google-ads-script"
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=AW-5933503394`}
+        />
+        <Script
+          id="google-ads-config"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-5933503394');
+            `,
+          }}
+        />
         <noscript>
           <img
             height="1"
