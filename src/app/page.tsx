@@ -1,6 +1,6 @@
 import { Hero } from "@/components/home/hero"
 import { ServicesOverview } from "@/components/home/services-overview"
-import { HowItWorks } from "@/components/home/how-it-works"
+// import { HowItWorks } from "@/components/home/how-it-works"
 import { TrustSignals } from "@/components/home/trust-signals"
 import { MailInRepair } from "@/components/home/mail-in-repair"
 import { LocationHours } from "@/components/home/location-hours"
@@ -64,7 +64,7 @@ export default function Home() {
       />
       <Hero />
       <ServicesOverview />
-      <HowItWorks />
+      
       <TrustSignals />
       <MailInRepair />
       <LocationHours />
