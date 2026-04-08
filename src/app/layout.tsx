@@ -5,6 +5,8 @@ import Script from "next/script"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import "./globals.css"
+import DiscountModal from "@/components/discount-modal"
+
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -92,6 +94,8 @@ export default function RootLayout({
         <Header />
         <main>{children}</main>
         <Footer />
+          <DiscountModal />
+
         <Analytics />
       </body>
     </html>
