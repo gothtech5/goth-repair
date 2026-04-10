@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "GothTech | Phone Repair Minneapolis & iPad Repair Minneapolis",
     description:
-      "Certified technicians with over 10,000 screen repairs completed. Phone repair Minneapolis, iPad repair Minneapolis — same-day service, free diagnostics.",
+      "Certified technicians with over 50,000 screen repairs completed. Phone repair Minneapolis, iPad repair Minneapolis — same-day service, free diagnostics.",
     url: "https://gothtech.repair",
     siteName: "GothTech",
     locale: "en_US",
