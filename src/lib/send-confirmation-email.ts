@@ -295,4 +295,10 @@ async function sendMailInStoreNotification(params: MailInEmailParams): Promise<v
     html,
     text: `New mail-in request from ${customerName}\n\nPhone: ${phone}\nEmail: ${email}\nDevice: ${deviceDisplay}\nIssues: ${issues}\n${issueDescription ? `Description: ${issueDescription}\n` : ""}Return address: ${returnAddress}`,
   })
-}
+}// Notify owner
+await resend.emails.send({
+from: "bookings@gothtechnology.com",
+to: "gothtechnology5@gmail.com",
+subject: `New Booking: ${customerName}`,
+text: `New booking received from ${customerName}\nPhone: ${phone}\nEmail: ${email}`,
+})
