@@ -239,10 +239,10 @@ async function sendMailInCustomerEmail(params: MailInEmailParams): Promise<void>
 from: "bookings@gothtechnology.com",
 to: "gothtechnology5@gmail.com",
 subject: `New Walk-In Booking: ${customerName}`,
-text: `New booking!\nName: ${customerName}\nEmail: ${email}\nDate: ${date}\nTime: ${timeSlot}\nDevice: ${deviceDisplay}`,
-})
+text: `New booking!\nName: ${customerName}\nEmail:
+${email}\,
+}) 
 }
-
 async function sendMailInStoreNotification(params: MailInEmailParams): Promise<void> {
   const { customerName, email, phone, brand, modelName, issues, issueDescription, shippingAddress } = params
   const deviceDisplay = brand ? `${brand} ${modelName}` : modelName
