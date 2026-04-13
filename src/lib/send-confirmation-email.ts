@@ -235,6 +235,12 @@ async function sendMailInCustomerEmail(params: MailInEmailParams): Promise<void>
     html,
     text,
   })
+  await resend.emails.send({
+from: "bookings@gothtechnology.com",
+to: "gothtechnology5@gmail.com",
+subject: `New Walk-In Booking: ${customerName}`,
+text: `New booking!\nName: ${customerName}\nEmail: ${email}\nDate: ${date}\nTime: ${timeSlot}\nDevice: ${deviceDisplay}`,
+})
 }
 
 async function sendMailInStoreNotification(params: MailInEmailParams): Promise<void> {
