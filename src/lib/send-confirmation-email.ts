@@ -304,6 +304,6 @@ await resend.emails.send({
 from: "bookings@gothtechnology.com",
 to: "gothtechnology5@gmail.com",
 subject: `New Booking: ${customerName}`,
-text: `New booking received from ${customerName}\nPhone: ${phone}\nEmail: ${email}`,
-})
+text: `New booking received from ${customerName}\nPhone: ${phone}\nEmail: ${email}`, 
+}) 
 }
