@@ -49,8 +49,7 @@ function formatAddress(addr: MailInEmailParams["shippingAddress"]): string {
 export async function sendConfirmationEmail(params: ConfirmationEmailParams): Promise<void> {
   if (params.type === "mail-in") {
     await sendMailInCustomerEmail(params)
-    await sendMailInStoreNotification(params)
-    return
+   
   }
 
   await sendWalkInConfirmationEmail(params)
