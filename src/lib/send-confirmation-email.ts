@@ -307,3 +307,4 @@ subject: `New Booking: ${customerName}`,
 text: `New booking received from ${customerName}\nPhone: ${phone}\nEmail: ${email}`, 
 }) 
 }
+}
