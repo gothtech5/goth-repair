@@ -49,8 +49,9 @@ function formatAddress(addr: MailInEmailParams["shippingAddress"]): string {
 export async function sendConfirmationEmail(params: ConfirmationEmailParams): Promise<void> {
   if (params.type === "mail-in") {
     await sendMailInCustomerEmail(params)
+    await sendMailInStoreNotification(params)
     return
- }
+  }
 
   await sendWalkInConfirmationEmail(params)
 }
@@ -133,6 +134,14 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
     subject,
     html,
     text,
+  })
+
+  // Send store notification
+  await resend.emails.send({
+    from: "bookings@gothtechnology.com",
+    to: "gothtechnology5@gmail.com",
+    subject: `New Walk-In Booking: ${customerName}`,
+    text: `New booking!\nName: ${customerName}\nEmail: ${email}\nDate: ${friendlyDate}\nTime: ${timeSlot}\nDevice: ${deviceDisplay}`,
   })
 }
 
@@ -234,12 +243,8 @@ async function sendMailInCustomerEmail(params: MailInEmailParams): Promise<void>
     html,
     text,
   })
-  await resend.emails.send({
-from: "bookings@gothtechnology.com",
-to: "gothtechnology5@gmail.com",
-subject: `New Walk-In Booking: ${customerName}`,
-text: `New booking!\nName: ${customerName}\nEmail: ${email}\nDate: ${date}\nTime: ${timeSlot}\nDevice: ${deviceDisplay}`,
-})
+}
+
 async function sendMailInStoreNotification(params: MailInEmailParams): Promise<void> {
   const { customerName, email, phone, brand, modelName, issues, issueDescription, shippingAddress } = params
   const deviceDisplay = brand ? `${brand} ${modelName}` : modelName
@@ -298,12 +303,4 @@ async function sendMailInStoreNotification(params: MailInEmailParams): Promise<v
     html,
     text: `New mail-in request from ${customerName}\n\nPhone: ${phone}\nEmail: ${email}\nDevice: ${deviceDisplay}\nIssues: ${issues}\n${issueDescription ? `Description: ${issueDescription}\n` : ""}Return address: ${returnAddress}`,
   })
-  
-await resend.emails.send({
-from: "bookings@gothtechnology.com",
-to: "gothtechnology5@gmail.com",
-subject: `New Booking: ${customerName}`,
-text: `New booking received from ${customerName}\nPhone: ${phone}\nEmail: ${email}`, 
-}) 
-}
 }
