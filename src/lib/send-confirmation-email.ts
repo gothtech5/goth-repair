@@ -7,6 +7,14 @@ function getResendClient(): Resend {
   return new Resend(apiKey)
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
 interface WalkInEmailParams {
   type: "walk-in"
   eventId: string
@@ -80,15 +88,15 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
       <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Name</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${customerName}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(customerName)}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Device</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${deviceDisplay}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(deviceDisplay)}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Issues</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${issues}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(issues)}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Date</td>
@@ -96,7 +104,7 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
         </tr>
         <tr>
           <td style="padding: 10px 0; color: #6b7280;">Time</td>
-          <td style="padding: 10px 0; text-align: right; font-weight: 500;">${timeSlot}</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 500;">${escapeHtml(timeSlot)}</td>
         </tr>
       </table>
 
@@ -160,19 +168,19 @@ async function sendMailInCustomerEmail(params: MailInEmailParams): Promise<void>
       <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Name</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${customerName}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(customerName)}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Device</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${deviceDisplay}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(deviceDisplay)}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Issues</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${issues}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(issues)}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; color: #6b7280;">Return address</td>
-          <td style="padding: 10px 0; text-align: right; font-weight: 500;">${returnAddress}</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 500;">${escapeHtml(returnAddress)}</td>
         </tr>
       </table>
 
@@ -260,32 +268,32 @@ async function sendMailInStoreNotification(params: MailInEmailParams): Promise<v
       <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Customer</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${customerName}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(customerName)}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Phone</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;"><a href="tel:${phone}" style="color: #2563eb; text-decoration: none;">${phone}</a></td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;"><a href="tel:${escapeHtml(phone)}" style="color: #2563eb; text-decoration: none;">${escapeHtml(phone)}</a></td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Email</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;"><a href="mailto:${email}" style="color: #2563eb; text-decoration: none;">${email}</a></td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;"><a href="mailto:${escapeHtml(email)}" style="color: #2563eb; text-decoration: none;">${escapeHtml(email)}</a></td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Device</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${deviceDisplay}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(deviceDisplay)}</td>
         </tr>
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Issues</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${issues}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(issues)}</td>
         </tr>
         ${issueDescription ? `
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Description</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${issueDescription}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(issueDescription)}</td>
         </tr>` : ""}
         <tr>
           <td style="padding: 10px 0; color: #6b7280;">Return address</td>
-          <td style="padding: 10px 0; text-align: right; font-weight: 500;">${returnAddress}</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 500;">${escapeHtml(returnAddress)}</td>
         </tr>
       </table>
 
