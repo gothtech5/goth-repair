@@ -139,6 +139,7 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
   await resend.emails.send({
     from: "bookings@gothtechnology.com",
     to: email,
+    replyTo: "gothtechnology5@gmail.com",
     subject,
     html,
     text,
@@ -148,6 +149,7 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
   await resend.emails.send({
     from: "bookings@gothtechnology.com",
     to: "gothtechnology5@gmail.com",
+    replyTo: email,
     subject: `New Walk-In Booking: ${customerName}`,
     text: `New booking!\nName: ${customerName}\nEmail: ${email}\nDate: ${friendlyDate}\nTime: ${timeSlot}\nDevice: ${deviceDisplay}`,
   })
@@ -247,6 +249,7 @@ async function sendMailInCustomerEmail(params: MailInEmailParams): Promise<void>
   await resend.emails.send({
     from: "bookings@gothtechnology.com",
     to: email,
+    replyTo: "gothtechnology5@gmail.com",
     subject,
     html,
     text,
@@ -307,8 +310,10 @@ async function sendMailInStoreNotification(params: MailInEmailParams): Promise<v
   await resend.emails.send({
     from: "bookings@gothtechnology.com",
     to: "gothtechnology5@gmail.com",
+    replyTo: email,
     subject,
     html,
     text: `New mail-in request from ${customerName}\n\nPhone: ${phone}\nEmail: ${email}\nDevice: ${deviceDisplay}\nIssues: ${issues}\n${issueDescription ? `Description: ${issueDescription}\n` : ""}Return address: ${returnAddress}`,
   })
 }
+
