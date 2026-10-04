@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import "./globals.css"
 import DiscountModal from "@/components/discount-modal"
+import { PublicOnly } from "@/components/layout/public-only"
 
 
 const inter = Inter({ subsets: ["latin"] })
@@ -104,10 +105,14 @@ export default function RootLayout({
         </noscript>
       </head>
       <body className={inter.className}>
-        <Header />
+        <PublicOnly>
+          <Header />
+        </PublicOnly>
         <main>{children}</main>
-        <Footer />
+        <PublicOnly>
+          <Footer />
           <DiscountModal />
+        </PublicOnly>
 
         <Analytics />
       </body>
