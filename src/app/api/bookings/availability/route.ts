@@ -27,11 +27,12 @@ function isRetryable(err: unknown): boolean {
 
 const TIMEZONE = "America/Chicago"
 
+// Store hours are 11:00 AM to 9:00 PM. Appointments start every 30 minutes,
+// from 11:00 AM through 8:30 PM (the last slot, so there is time before closing).
 const SLOT_TIMES = (() => {
   const times: string[] = []
   for (let hour = 11; hour <= 20; hour++) {
     for (const minutes of [0, 30]) {
-      if (hour === 20 && minutes === 30) continue
       const h = hour > 12 ? hour - 12 : hour === 12 ? 12 : hour
       const ampm = hour >= 12 ? "PM" : "AM"
       const m = minutes.toString().padStart(2, "0")
@@ -60,6 +61,24 @@ function eventToLocalMinutes(dateTime: string): number {
   const d = new Date(dateTime)
   const local = new Date(d.toLocaleString("en-US", { timeZone: TIMEZONE }))
   return local.getHours() * 60 + local.getMinutes()
+}
+
+/** Today's date and the current time of day at the store (Minneapolis time). */
+function storeNow(): { date: string; minutes: number } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date())
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00"
+  return {
+    date: `${get("year")}-${get("month")}-${get("day")}`,
+    minutes: Number(get("hour")) * 60 + Number(get("minute")),
+  }
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -103,6 +122,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         const slotEndMin = slotStartMin + 30
 
         if (slotStartMin < busyEndMin && slotEndMin > busyStartMin) {
+          unavailable.add(slot)
+        }
+      }
+    }
+
+    // Same-day booking is allowed with no advance notice, and any future date can be booked.
+    // The only times hidden are ones that have already started today (or days already gone).
+    const now = storeNow()
+    if (date <= now.date) {
+      for (const slot of SLOT_TIMES) {
+        const { hours, minutes } = slotTo24h(slot)
+        if (date < now.date || slotToMinutes(hours, minutes) <= now.minutes) {
           unavailable.add(slot)
         }
       }
