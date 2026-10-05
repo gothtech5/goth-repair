@@ -24,6 +24,14 @@ export function toInt(input: FormDataEntryValue | null, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback
 }
 
+/** Whole number that is 0 or more, or null when the field is left blank. */
+export function toIntOrNull(input: FormDataEntryValue | null): number | null {
+  const raw = String(input ?? "").trim()
+  if (!raw) return null
+  const n = parseInt(raw, 10)
+  return Number.isFinite(n) ? Math.max(0, n) : null
+}
+
 export function text(input: FormDataEntryValue | null): string {
   return String(input ?? "").trim()
 }
