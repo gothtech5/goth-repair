@@ -66,7 +66,10 @@ export default function Home() {
       <ServicesOverview />
       
       <TrustSignals />
-      <MailInRepair />
+      {/* The id lets the "Mail-In Repair - Learn more" link in the hero jump here. */}
+      <div id="mail-in" className="scroll-mt-20">
+        <MailInRepair />
+      </div>
       <LocationHours />
     </>
   )
