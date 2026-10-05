@@ -2,7 +2,8 @@ import { Hero } from "@/components/home/hero"
 import { ServicesOverview } from "@/components/home/services-overview"
 // import { HowItWorks } from "@/components/home/how-it-works"
 import { TrustSignals } from "@/components/home/trust-signals"
-import { MailInRepair } from "@/components/home/mail-in-repair"
+// Mail-in section is hidden for now (homepage focuses on in-store Minneapolis repairs).
+// import { MailInRepair } from "@/components/home/mail-in-repair"
 import { LocationHours } from "@/components/home/location-hours"
 
 const LOCAL_BUSINESS_JSONLD = {
@@ -66,10 +67,7 @@ export default function Home() {
       <ServicesOverview />
       
       <TrustSignals />
-      {/* The id lets the "Mail-In Repair - Learn more" link in the hero jump here. */}
-      <div id="mail-in" className="scroll-mt-20">
-        <MailInRepair />
-      </div>
+      {/* <MailInRepair /> */}
       <LocationHours />
     </>
   )
