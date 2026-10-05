@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
 import { dollars, one, text, toInt, type Search } from "@/lib/evertrail/format"
+import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { ScanInput } from "@/components/evertrail/scan-input"
 import { Shell, inputClass, buttonClass, smallButtonClass, linkClass } from "@/components/evertrail/shell"
 
@@ -19,6 +20,8 @@ async function adjustStock(formData: FormData) {
   try {
     // Stock never goes below zero.
     await sql(`update products set quantity_on_hand = greatest(0, quantity_on_hand + $2) where id = $1`, [id, change])
+    const note = lowStockNote(await checkLowStock(id)).trim()
+    if (note) target += "&ok=" + encodeURIComponent(note)
   } catch (e) {
     target += "&err=" + encodeURIComponent(friendlyError(e))
   }
@@ -45,7 +48,7 @@ export default async function ScanPage({ searchParams }: { searchParams: Search 
   }
 
   return (
-    <Shell title="Scan" error={error}>
+    <Shell title="Scan" error={error} notice={one(params.ok)}>
       <form method="get" className="mb-6 flex gap-2">
         <ScanInput
           name="code"
@@ -69,6 +72,9 @@ export default async function ScanPage({ searchParams }: { searchParams: Search 
             Price ${dollars(product.price_cents)} · Cost ${dollars(product.cost_cents)}
           </p>
           <p className="mt-3 text-3xl font-bold">{product.quantity_on_hand} in stock</p>
+          {product.low_stock_threshold !== null ? (
+            <p className="mt-1 text-sm text-neutral-700">Reminder at or below {product.low_stock_threshold}</p>
+          ) : null}
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {[-1, 1, 5, 10].map((change) => (

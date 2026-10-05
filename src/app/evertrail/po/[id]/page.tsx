@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
 import { one, text, toInt, type Search } from "@/lib/evertrail/format"
+import { checkLowStock } from "@/lib/evertrail/low-stock"
 import { ScanInput } from "@/components/evertrail/scan-input"
 import { Shell, Field, inputClass, buttonClass, smallButtonClass, linkClass } from "@/components/evertrail/shell"
 
@@ -52,6 +53,8 @@ async function receiveUnits(poId: number, productId: number, wanted: number | nu
      returning upd.take`,
     [poId, productId, wanted]
   )
+  // Stock went up: this clears the "already emailed" mark once stock is back above the reminder level.
+  if (rows.length) await checkLowStock(productId)
   return rows.length ? Number(rows[0].take) : 0
 }
 

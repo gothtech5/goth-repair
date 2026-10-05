@@ -2,7 +2,8 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
-import { dollars, one, text, toCents, toInt, type Search } from "@/lib/evertrail/format"
+import { dollars, one, text, toCents, toInt, toIntOrNull, type Search } from "@/lib/evertrail/format"
+import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { Shell, Field, inputClass, buttonClass, linkClass } from "@/components/evertrail/shell"
 
 export const dynamic = "force-dynamic"
@@ -23,7 +24,8 @@ async function saveProduct(formData: FormData) {
     try {
       await sql(
         `update products
-            set name = $2, sku = $3, barcode = $4, price_cents = $5, cost_cents = $6, quantity_on_hand = $7
+            set name = $2, sku = $3, barcode = $4, price_cents = $5, cost_cents = $6, quantity_on_hand = $7,
+                low_stock_threshold = $8
           where id = $1`,
         [
           id,
@@ -33,9 +35,11 @@ async function saveProduct(formData: FormData) {
           toCents(formData.get("price")),
           toCents(formData.get("cost")),
           Math.max(0, toInt(formData.get("quantity"))),
+          toIntOrNull(formData.get("low_stock_threshold")),
         ]
       )
-      target = "/evertrail/products?ok=" + encodeURIComponent(`Saved "${name}".`)
+      const alert = await checkLowStock(id)
+      target = "/evertrail/products?ok=" + encodeURIComponent(`Saved "${name}".` + lowStockNote(alert))
     } catch (e) {
       target += "?err=" + encodeURIComponent(friendlyError(e))
     }
@@ -103,7 +107,17 @@ export default async function EditProductPage({
             className={inputClass}
           />
         </Field>
-        <div className="flex items-end gap-4">
+        <Field label="Remind me when stock is at or below (optional)">
+          <input
+            name="low_stock_threshold"
+            type="number"
+            min="0"
+            placeholder="No reminder"
+            defaultValue={product.low_stock_threshold ?? ""}
+            className={inputClass}
+          />
+        </Field>
+        <div className="flex items-end gap-4 sm:col-span-2">
           <button type="submit" className={buttonClass}>
             Save
           </button>

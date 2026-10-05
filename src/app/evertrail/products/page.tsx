@@ -2,7 +2,8 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
-import { dollars, one, text, toCents, toInt, type Search } from "@/lib/evertrail/format"
+import { dollars, one, text, toCents, toInt, toIntOrNull, type Search } from "@/lib/evertrail/format"
+import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { Shell, Field, inputClass, buttonClass, linkClass } from "@/components/evertrail/shell"
 
 export const dynamic = "force-dynamic"
@@ -22,8 +23,8 @@ async function addProduct(formData: FormData) {
     try {
       // A blank SKU or barcode gets filled in automatically from the product number.
       const rows = await sql(
-        `insert into products (sku, barcode, name, price_cents, cost_cents, quantity_on_hand)
-         values (coalesce($1, 'TMP-' || md5(random()::text || clock_timestamp()::text)), $2, $3, $4, $5, $6)
+        `insert into products (sku, barcode, name, price_cents, cost_cents, quantity_on_hand, low_stock_threshold)
+         values (coalesce($1, 'TMP-' || md5(random()::text || clock_timestamp()::text)), $2, $3, $4, $5, $6, $7)
          returning id`,
         [
           sku || null,
@@ -32,6 +33,7 @@ async function addProduct(formData: FormData) {
           toCents(formData.get("price")),
           toCents(formData.get("cost")),
           Math.max(0, toInt(formData.get("quantity"))),
+          toIntOrNull(formData.get("low_stock_threshold")),
         ]
       )
       const id = rows[0].id
@@ -42,7 +44,8 @@ async function addProduct(formData: FormData) {
           where id = $1`,
         [id]
       )
-      target = "/evertrail/products?ok=" + encodeURIComponent(`Added "${name}".`)
+      const alert = await checkLowStock(id ?? "")
+      target = "/evertrail/products?ok=" + encodeURIComponent(`Added "${name}".` + lowStockNote(alert))
     } catch (e) {
       target = "/evertrail/products?err=" + encodeURIComponent(friendlyError(e))
     }
@@ -96,7 +99,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
           <Field label="Cost ($)">
             <input name="cost" inputMode="decimal" placeholder="0.00" className={inputClass} />
           </Field>
-          <div className="flex items-end">
+          <Field label="Remind me when stock is at or below (optional)">
+            <input name="low_stock_threshold" type="number" min="0" placeholder="No reminder" className={inputClass} />
+          </Field>
+          <div className="flex items-end sm:col-span-2">
             <button type="submit" className={buttonClass}>
               Add product
             </button>
@@ -121,6 +127,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
               <th className="py-2 pr-3 text-right">Price</th>
               <th className="py-2 pr-3 text-right">Cost</th>
               <th className="py-2 pr-3 text-right">In stock</th>
+              <th className="py-2 pr-3 text-right">Remind at</th>
               <th className="py-2"></th>
             </tr>
           </thead>
@@ -133,6 +140,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
                 <td className="py-2 pr-3 text-right">${dollars(p.price_cents)}</td>
                 <td className="py-2 pr-3 text-right">${dollars(p.cost_cents)}</td>
                 <td className="py-2 pr-3 text-right">{p.quantity_on_hand}</td>
+                <td className="py-2 pr-3 text-right">{p.low_stock_threshold ?? "-"}</td>
                 <td className="py-2 whitespace-nowrap">
                   <Link href={`/evertrail/products/${p.id}`} className={linkClass}>
                     Edit
