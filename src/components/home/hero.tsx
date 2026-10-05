@@ -96,7 +96,7 @@ export function Hero() {
           Phones &amp; iPad repair in Minneapolis.
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-lg text-text-secondary text-pretty">
-          Certified technicians with over 15,000 screen repairs completed. Walk in or book online — free diagnostics, every time. Not in Minnesota? We offer mail-in repair nationwide.
+          Certified technicians with over 15,000 screen repairs completed. Walk in or book online — free diagnostics, every time.
         </p>
 
         <p className="mt-8 text-sm font-medium text-text-tertiary">Select your device to get started</p>
