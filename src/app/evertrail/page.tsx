@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic"
 
 const CARDS = [
   { href: "/evertrail/products", title: "Products", text: "Add products and set prices, barcodes and stock." },
+  { href: "/evertrail/categories", title: "Categories", text: "Group products into categories and sub-categories." },
   { href: "/evertrail/labels", title: "Labels", text: "Print barcode labels on the DYMO printer." },
   { href: "/evertrail/scan", title: "Scan", text: "Scan a barcode to look up a product and adjust stock." },
   { href: "/evertrail/po", title: "Purchase orders", text: "Order from vendors and receive shipments." },
