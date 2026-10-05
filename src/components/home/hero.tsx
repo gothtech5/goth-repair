@@ -16,7 +16,6 @@ const SERVICES = [
   { title: "Screen Repair", subtitle: "iPhone, iPad & Samsung", linkText: "Book a repair", linkHref: "/book" },
   { title: "Battery Service", subtitle: "Same-day replacement", linkText: "Book now", linkHref: "/book" },
   { title: "Free Diagnostics", subtitle: "Professional assessment", linkText: "Schedule", linkHref: "/book" },
-  { title: "Mail-In Repair", subtitle: "Nationwide service", linkText: "Learn more", linkHref: "/#mail-in" },
 ] as const
 
 type StoreStatus =
@@ -39,7 +38,7 @@ export function Hero() {
 
   return (
     <section className="border-b border-border-light">
-      {/* Store name, hours and the five services */}
+      {/* Store name, hours and the four in-store services */}
       <div className="mx-auto max-w-[1120px] px-6 pb-12 pt-14 text-center md:pb-16 md:pt-24">
         <h1 className="text-[40px] font-semibold leading-[1.05] tracking-tight text-balance sm:text-[56px] md:text-[64px]">
           GothTech Minneapolis
@@ -64,7 +63,7 @@ export function Hero() {
           {SERVICES.map((service) => (
             <li
               key={service.title}
-              className="flex w-1/2 flex-col items-center gap-1.5 px-3 sm:w-1/3 lg:w-1/5"
+              className="flex w-1/2 flex-col items-center gap-1.5 px-3 md:w-1/4"
             >
               <CheckCircle className="mb-1 size-6 fill-success stroke-white" aria-hidden="true" />
               <p className="text-base font-semibold">{service.title}</p>
@@ -77,14 +76,14 @@ export function Hero() {
         </ul>
       </div>
 
-      {/* Large store photo */}
-      <div className="mx-auto max-w-[1120px] sm:px-6">
-        <div className="relative aspect-[4/3] overflow-hidden bg-surface-secondary sm:aspect-[16/9] sm:rounded-3xl lg:aspect-[2/1]">
+      {/* Large store photo: nearly the full width of the screen, with a small margin on each side */}
+      <div className="mx-auto max-w-[2000px] px-3 sm:px-4 lg:px-6">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface-secondary sm:aspect-[16/9] sm:rounded-3xl lg:aspect-[21/9]">
           <Image
             src="/images/store.jpg"
             alt="GothTech repair shop with phone cases and accessories on display"
             fill
-            sizes="(min-width: 1120px) 1072px, 100vw"
+            sizes="100vw"
             className="object-cover"
             priority
           />
