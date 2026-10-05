@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
 import { dollars, one, text, toInt, type Search } from "@/lib/evertrail/format"
 import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
+import { CameraScanner } from "@/components/evertrail/camera-scanner"
 import { ScanInput } from "@/components/evertrail/scan-input"
 import { Shell, inputClass, buttonClass, smallButtonClass, linkClass } from "@/components/evertrail/shell"
 
@@ -49,7 +50,8 @@ export default async function ScanPage({ searchParams }: { searchParams: Search 
 
   return (
     <Shell title="Scan" error={error} notice={one(params.ok)}>
-      <form method="get" className="mb-6 flex gap-2">
+      <CameraScanner formId="scan-form" inputName="code" />
+      <form id="scan-form" method="get" className="mb-6 flex gap-2">
         <ScanInput
           name="code"
           stamp={Date.now()}
