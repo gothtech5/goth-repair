@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { CookieSettingsButton } from "@/components/consent/cookie-settings-button"
 
 export function Footer() {
   return (
@@ -33,6 +34,11 @@ export function Footer() {
               <li>
                 <Link href="/privacy" className="hover:text-text-primary">
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/cookies" className="hover:text-text-primary">
+                  Cookie Policy
                 </Link>
               </li>
               <li>
@@ -75,9 +81,15 @@ export function Footer() {
               Privacy Policy
             </Link>
             <span className="mx-2">&middot;</span>
+            <Link href="/cookies" className="hover:text-text-secondary">
+              Cookie Policy
+            </Link>
+            <span className="mx-2">&middot;</span>
             <Link href="/terms" className="hover:text-text-secondary">
               Terms of Service
             </Link>
+            <span className="mx-2">&middot;</span>
+            <CookieSettingsButton className="hover:text-text-secondary" />
           </p>
         </div>
       </div>
