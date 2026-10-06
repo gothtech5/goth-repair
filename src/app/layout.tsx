@@ -3,7 +3,6 @@ import { Inter } from "next/font/google"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import "./globals.css"
-import DiscountModal from "@/components/discount-modal"
 import { PublicOnly } from "@/components/layout/public-only"
 import { ConsentManager } from "@/components/consent/consent-manager"
 
@@ -50,7 +49,6 @@ export default function RootLayout({
         <main>{children}</main>
         <PublicOnly>
           <Footer />
-          <DiscountModal />
           {/* Cookie banner. Google Analytics, Google Ads, Meta Pixel and
               Vercel Analytics are loaded from inside it, only after the
               visitor's cookie choice allows them. */}
