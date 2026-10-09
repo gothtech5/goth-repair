@@ -11,6 +11,7 @@ const CARDS = [
   { href: "/evertrail/labels", title: "Labels", text: "Print barcode labels on the DYMO printer." },
   { href: "/evertrail/scan", title: "Scan", text: "Scan a barcode to look up a product and adjust stock." },
   { href: "/evertrail/po", title: "Purchase orders", text: "Order from vendors and receive shipments." },
+  { href: "/evertrail/square", title: "Square sales", text: "Items sold in Square and the stock they took off." },
 ]
 
 export default async function EvertrailHome() {
