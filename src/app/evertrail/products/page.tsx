@@ -98,7 +98,7 @@ async function sendToSquare() {
   try {
     const result = await sendProductsToSquare()
     const message = syncSummary(result)
-    target = "/evertrail/products?" + (result.failed ? "err=" : "ok=") + encodeURIComponent(message)
+    target = "/evertrail/products?" + (result.failed || result.pending ? "err=" : "ok=") + encodeURIComponent(message)
   } catch (e) {
     target = "/evertrail/products?err=" + encodeURIComponent("Could not send products to Square. " + friendlyError(e))
   }
