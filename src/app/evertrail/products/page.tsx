@@ -6,10 +6,13 @@ import { dollars, one, text, toCents, toInt, toIntOrNull, type Search } from "@/
 import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { loadCategories, pickedCategory, type Category } from "@/lib/evertrail/categories"
 import { addStock, stockToAdd } from "@/lib/evertrail/stock"
+import { sendProductsToSquare, syncSummary } from "@/lib/evertrail/square-sync"
 import { Shell, Field, inputClass, buttonClass, linkClass } from "@/components/evertrail/shell"
 import { CategorySelect } from "@/components/evertrail/category-select"
 
 export const dynamic = "force-dynamic"
+// "Send products to Square" can take a while with many products.
+export const maxDuration = 120
 
 async function addProduct(formData: FormData) {
   "use server"
@@ -83,6 +86,21 @@ async function addStockToExisting(formData: FormData) {
     } catch (e) {
       target = `/evertrail/products?dup=${id}&err=` + encodeURIComponent(friendlyError(e))
     }
+  }
+  redirect(target)
+}
+
+async function sendToSquare() {
+  "use server"
+  await requireAuth()
+
+  let target = ""
+  try {
+    const result = await sendProductsToSquare()
+    const message = syncSummary(result)
+    target = "/evertrail/products?" + (result.failed ? "err=" : "ok=") + encodeURIComponent(message)
+  } catch (e) {
+    target = "/evertrail/products?err=" + encodeURIComponent("Could not send products to Square. " + friendlyError(e))
   }
   redirect(target)
 }
@@ -190,6 +208,22 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
               Add product
             </button>
           </div>
+        </form>
+      </section>
+
+      <section className="mb-8 rounded-lg border border-neutral-300 p-4">
+        <h2 className="text-lg font-semibold">Square</h2>
+        <p className="mt-1 mb-3 text-sm text-neutral-700">
+          Copies every product into Square&apos;s item list with the same name, price and barcode. Products already in
+          Square are updated, not copied twice. Stock stays in Evertrail.{" "}
+          <Link href="/evertrail/square" className={linkClass}>
+            See Square sales
+          </Link>
+        </p>
+        <form action={sendToSquare}>
+          <button type="submit" className={buttonClass}>
+            Send products to Square
+          </button>
         </form>
       </section>
 
