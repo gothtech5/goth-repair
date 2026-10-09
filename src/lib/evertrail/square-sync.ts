@@ -26,6 +26,8 @@ export type SyncResult = {
   failed: number
   /** Not sent yet because Square was still busy. Pressing the button again finishes them. */
   pending: number
+  /** Extra Square items with the same barcode as an Evertrail product (not the one Evertrail uses). */
+  duplicates: number
   errors: string[]
 }
 
@@ -74,20 +76,22 @@ export async function sendProductsToSquare(): Promise<SyncResult> {
     linked: 0,
     failed: 0,
     pending: 0,
+    duplicates: 0,
     errors: [],
   }
   const deadline = Date.now() + TIME_BUDGET_MS
   if (!products.length) return result
 
   // 1. Everything already in Square's item list, by variation ID and by SKU / UPC.
-  const variations = await listAllVariations()
+  //    Archived (hidden) items are only used when a product is already linked to one.
+  const catalog = await listCatalogItems()
   const byId = new Map<string, CatalogObject>()
   const byCode = new Map<string, CatalogObject>()
-  for (const v of variations) {
+  for (const { variation: v, archived } of catalog) {
     byId.set(v.id, v)
-    for (const code of [v.item_variation_data?.sku, v.item_variation_data?.upc]) {
-      const key = (code ?? "").trim()
-      if (key && !byCode.has(key)) byCode.set(key, v)
+    if (archived) continue
+    for (const code of codesOf(v)) {
+      if (!byCode.has(code)) byCode.set(code, v)
     }
   }
   const takenVariationIds = new Set(products.map((p) => p.variationId).filter(Boolean) as string[])
@@ -176,6 +180,9 @@ export async function sendProductsToSquare(): Promise<SyncResult> {
     }
     await saveSquareIds(saved)
   }
+
+  // 6. Count leftover copies in Square (same barcode, not the item Evertrail uses).
+  result.duplicates = (await findDuplicates(catalog)).length
   return result
 }
 
@@ -210,6 +217,9 @@ export function syncSummary(r: SyncResult): string {
   if (details.length) parts.push(`(${details.join(", ")})`)
   let text = parts.join(" ") + "."
   if (r.failed) text += ` ${r.failed} could not be sent.` + (r.errors.length ? " " + r.errors.join(" ") : "")
+  if (r.duplicates) {
+    text += ` Square also has ${r.duplicates} extra cop${r.duplicates === 1 ? "y" : "ies"} of these products (same barcode). Use "Hide duplicates in Square" to archive them.`
+  }
   if (r.pending) {
     text += ` ${r.pending} are still to go because Square is busy saving. Wait a minute, then press Send products to Square again to finish.`
   }
@@ -280,17 +290,99 @@ function updatedItem(item: CatalogObject, plans: Plan[]): CatalogObject {
   return { ...item, item_data: itemData }
 }
 
-async function listAllVariations(): Promise<CatalogObject[]> {
-  const out: CatalogObject[] = []
+type CatalogEntry = { variation: CatalogObject; item: CatalogObject; archived: boolean }
+
+/** Every item in Square's item list (with its variations), skipping deleted ones. */
+async function listCatalogItems(): Promise<CatalogEntry[]> {
+  const out: CatalogEntry[] = []
   let cursor = ""
   for (let page = 0; page < 500; page++) {
-    const query = "?types=ITEM_VARIATION" + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "")
+    const query = "?types=ITEM" + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "")
     const reply = await square<{ objects?: CatalogObject[]; cursor?: string }>("/catalog/list" + query)
-    for (const o of reply.objects ?? []) if (!o.is_deleted) out.push(o)
+    for (const item of reply.objects ?? []) {
+      if (item.is_deleted || item.type !== "ITEM") continue
+      const archived = item.item_data?.is_archived === true
+      for (const variation of item.item_data?.variations ?? []) {
+        if (!variation.is_deleted) out.push({ variation, item, archived })
+      }
+    }
     cursor = reply.cursor ?? ""
     if (!cursor) break
   }
   return out
+}
+
+function codesOf(variation: CatalogObject): string[] {
+  const data = variation.item_variation_data
+  return [...new Set([data?.sku, data?.upc].map((c) => (c ?? "").trim()).filter(Boolean))]
+}
+
+type Duplicate = { item: CatalogObject; productName: string }
+
+/**
+ * Square items that are copies of an Evertrail product: a visible, one-variation item whose
+ * barcode (SKU or UPC) is an Evertrail product's barcode, but which is not the Square item that
+ * product is linked to. Items with several variations are never touched.
+ */
+async function findDuplicates(catalog: CatalogEntry[]): Promise<Duplicate[]> {
+  const rows = await sql(
+    `select name, barcode, square_item_id, square_variation_id from products
+      where barcode is not null and square_variation_id is not null`
+  )
+  const linkedByCode = new Map(rows.map((r) => [(r.barcode ?? "").trim(), r]))
+  const out: Duplicate[] = []
+  const seen = new Set<string>()
+  for (const { variation, item, archived } of catalog) {
+    if (archived || seen.has(item.id)) continue
+    if ((item.item_data?.variations ?? []).length !== 1) continue
+    const product = codesOf(variation).map((c) => linkedByCode.get(c)).find(Boolean)
+    if (!product) continue
+    if (variation.id === product.square_variation_id || item.id === product.square_item_id) continue
+    seen.add(item.id)
+    out.push({ item, productName: product.name ?? "" })
+  }
+  return out
+}
+
+export type DuplicateResult = { found: number; archived: number; pending: number; errors: string[] }
+
+/**
+ * "Hide duplicates in Square": archives the extra copies found by findDuplicates.
+ * Archiving hides an item from the Square app; it is not deleted and can be brought back in
+ * Square (Items > Item library > Status: Archived). Sales history in Square is kept.
+ */
+export async function archiveSquareDuplicates(): Promise<DuplicateResult> {
+  await ensureSquareSchema()
+  const deadline = Date.now() + TIME_BUDGET_MS
+  const duplicates = await findDuplicates(await listCatalogItems())
+  const result: DuplicateResult = { found: duplicates.length, archived: 0, pending: 0, errors: [] }
+
+  const batches = duplicates.map((d) => ({
+    objects: [{ ...d.item, item_data: { ...(d.item.item_data ?? {}), is_archived: true } }],
+  }))
+  const groups = groupBatches(batches)
+  for (let g = 0; g < groups.length; g++) {
+    const reply = Date.now() < deadline ? await upsertWithRetry(groups[g], deadline) : null
+    if (!reply || reply.busy) {
+      for (const later of groups.slice(g)) result.pending += later.length
+      break
+    }
+    const returned = new Set(reply.objects.map((o) => o.id))
+    result.archived += groups[g].filter((b) => returned.has(b.objects[0].id)).length
+    for (const message of reply.errors) {
+      if (result.errors.length < 3 && !result.errors.includes(message)) result.errors.push(message)
+    }
+  }
+  return result
+}
+
+export function duplicateSummary(r: DuplicateResult): string {
+  if (!r.found) return "No duplicate items found in Square."
+  let text = `Archived ${r.archived} of ${r.found} duplicate items in Square. They are hidden from the Square app, not deleted: to bring one back, open Square > Items > Item library > Status: Archived.`
+  const failed = r.found - r.archived - r.pending
+  if (failed > 0) text += ` ${failed} could not be archived.` + (r.errors.length ? " " + r.errors.join(" ") : "")
+  if (r.pending) text += ` ${r.pending} are still to go because Square is busy. Wait a minute and press the button again.`
+  return text
 }
 
 async function retrieveItems(ids: string[]): Promise<Map<string, CatalogObject>> {
