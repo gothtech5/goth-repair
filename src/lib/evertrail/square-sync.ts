@@ -24,6 +24,8 @@ export type SyncResult = {
   /** Products that were already in Square (same barcode) and are now linked to that item. */
   linked: number
   failed: number
+  /** Not sent yet because Square was still busy. Pressing the button again finishes them. */
+  pending: number
   errors: string[]
 }
 
@@ -40,7 +42,15 @@ type Plan =
   | { kind: "new"; product: ProductRow }
   | { kind: "existing"; product: ProductRow; itemId: string; variationId: string; linked: boolean }
 
-const BATCH_OBJECT_LIMIT = 9000 // Square allows 10,000 objects per request.
+// Square locks the item list while it saves a request, and a big request keeps it locked for a
+// long time. Small requests, one after another, with waiting and retrying when Square answers
+// "busy" (HTTP 429), is what Square recommends.
+const ITEMS_PER_REQUEST = 20
+const BATCH_OBJECT_LIMIT = 900
+// Stop starting new requests after this long, so the page always answers (the limit is 120 s).
+const TIME_BUDGET_MS = 85_000
+const FIRST_RETRY_WAIT_MS = 2_000
+const LONGEST_RETRY_WAIT_MS = 20_000
 
 export async function sendProductsToSquare(): Promise<SyncResult> {
   await ensureSquareSchema()
@@ -57,7 +67,16 @@ export async function sendProductsToSquare(): Promise<SyncResult> {
     variationId: r.square_variation_id,
   }))
 
-  const result: SyncResult = { total: products.length, created: 0, updated: 0, linked: 0, failed: 0, errors: [] }
+  const result: SyncResult = {
+    total: products.length,
+    created: 0,
+    updated: 0,
+    linked: 0,
+    failed: 0,
+    pending: 0,
+    errors: [],
+  }
+  const deadline = Date.now() + TIME_BUDGET_MS
   if (!products.length) return result
 
   // 1. Everything already in Square's item list, by variation ID and by SKU / UPC.
@@ -117,13 +136,21 @@ export async function sendProductsToSquare(): Promise<SyncResult> {
     batches.push({ objects: [updatedItem(items.get(itemId)!, itemPlans)], plans: itemPlans })
   }
 
-  // 5. Send to Square in as few requests as possible, then save the Square IDs in Evertrail.
-  const saved: { pid: number; item_id: string; var_id: string }[] = []
-  for (const group of groupBatches(batches)) {
-    const reply = await upsert(group.map((b) => ({ objects: b.objects })))
+  // 5. Send to Square a few items at a time. The Square IDs are saved after every request, so
+  //    nothing is lost if the page stops early, and pressing the button again simply continues.
+  const groups = groupBatches(batches)
+  for (let g = 0; g < groups.length; g++) {
+    const group = groups[g]
+    const reply = Date.now() < deadline ? await upsertWithRetry(group.map((b) => ({ objects: b.objects })), deadline) : null
+    if (!reply || reply.busy) {
+      // Square is still busy (or time is up): leave the rest for the next press of the button.
+      for (const later of groups.slice(g)) result.pending += later.reduce((n, b) => n + b.plans.length, 0)
+      break
+    }
     const mapped = new Map(reply.idMappings.map((m) => [m.client_object_id, m.object_id]))
     const returned = new Set(reply.objects.map((o) => o.id))
 
+    const saved: { pid: number; item_id: string; var_id: string }[] = []
     for (const batch of group) {
       for (const plan of batch.plans) {
         const pid = Number(plan.product.id)
@@ -147,32 +174,34 @@ export async function sendProductsToSquare(): Promise<SyncResult> {
     for (const message of reply.errors) {
       if (result.errors.length < 3 && !result.errors.includes(message)) result.errors.push(message)
     }
-  }
-
-  if (saved.length) {
-    const payload = JSON.stringify(saved)
-    // A Square variation belongs to one Evertrail product only.
-    await sql(
-      `update products set square_item_id = null, square_variation_id = null
-        where square_variation_id in (select var_id from json_to_recordset($1::json) as t(pid int, item_id text, var_id text))
-          and id not in (select pid from json_to_recordset($1::json) as t(pid int, item_id text, var_id text))`,
-      [payload]
-    )
-    await sql(
-      `update products p
-          set square_item_id = t.item_id, square_variation_id = t.var_id, square_synced_at = now()
-         from json_to_recordset($1::json) as t(pid int, item_id text, var_id text)
-        where p.id = t.pid`,
-      [payload]
-    )
+    await saveSquareIds(saved)
   }
   return result
+}
+
+async function saveSquareIds(saved: { pid: number; item_id: string; var_id: string }[]) {
+  if (!saved.length) return
+  const payload = JSON.stringify(saved)
+  // A Square variation belongs to one Evertrail product only.
+  await sql(
+    `update products set square_item_id = null, square_variation_id = null
+      where square_variation_id in (select var_id from json_to_recordset($1::json) as t(pid int, item_id text, var_id text))
+        and id not in (select pid from json_to_recordset($1::json) as t(pid int, item_id text, var_id text))`,
+    [payload]
+  )
+  await sql(
+    `update products p
+        set square_item_id = t.item_id, square_variation_id = t.var_id, square_synced_at = now()
+       from json_to_recordset($1::json) as t(pid int, item_id text, var_id text)
+      where p.id = t.pid`,
+    [payload]
+  )
 }
 
 /** One sentence for the Products page. */
 export function syncSummary(r: SyncResult): string {
   if (!r.total) return "There are no products to send yet."
-  const parts = [`Sent ${r.total - r.failed} of ${r.total} products to Square`]
+  const parts = [`Sent ${r.total - r.failed - r.pending} of ${r.total} products to Square`]
   const details = [
     r.created ? `${r.created} new` : "",
     r.updated ? `${r.updated} updated` : "",
@@ -181,6 +210,9 @@ export function syncSummary(r: SyncResult): string {
   if (details.length) parts.push(`(${details.join(", ")})`)
   let text = parts.join(" ") + "."
   if (r.failed) text += ` ${r.failed} could not be sent.` + (r.errors.length ? " " + r.errors.join(" ") : "")
+  if (r.pending) {
+    text += ` ${r.pending} are still to go because Square is busy saving. Wait a minute, then press Send products to Square again to finish.`
+  }
   return text
 }
 
@@ -281,7 +313,7 @@ function groupBatches<T extends { objects: CatalogObject[] }>(batches: T[]): T[]
   let count = 0
   for (const batch of batches) {
     const size = batch.objects.reduce((n, o) => n + 1 + (o.item_data?.variations?.length ?? 0), 0)
-    if (current.length && count + size > BATCH_OBJECT_LIMIT) {
+    if (current.length && (count + size > BATCH_OBJECT_LIMIT || current.length >= ITEMS_PER_REQUEST)) {
       groups.push(current)
       current = []
       count = 0
@@ -297,13 +329,34 @@ type UpsertReply = {
   objects: CatalogObject[]
   idMappings: { client_object_id: string; object_id: string }[]
   errors: string[]
+  /** Square answered "busy" (HTTP 429, for example "Catalog locked by prior request"). */
+  busy: boolean
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Sends one request, and when Square says it is busy, waits and sends the same request again
+ * (same idempotency key, so Square never saves it twice), waiting longer each time.
+ */
+async function upsertWithRetry(batches: { objects: CatalogObject[] }[], deadline: number): Promise<UpsertReply> {
+  const key = randomUUID()
+  let wait = FIRST_RETRY_WAIT_MS
+  for (;;) {
+    const reply = await upsert(batches, key)
+    if (!reply.busy) return reply
+    const pause = wait + Math.floor(Math.random() * 500)
+    if (Date.now() + pause + 5_000 > deadline) return reply
+    await sleep(pause)
+    wait = Math.min(wait * 2, LONGEST_RETRY_WAIT_MS)
+  }
 }
 
 /**
  * Square's batch upsert. Some batches can succeed while others fail, so this reads the reply
  * even when Square reports an error, instead of throwing it away.
  */
-async function upsert(batches: { objects: CatalogObject[] }[]): Promise<UpsertReply> {
+async function upsert(batches: { objects: CatalogObject[] }[], idempotencyKey: string): Promise<UpsertReply> {
   const token = process.env.SQUARE_ACCESS_TOKEN?.trim()
   if (!token) throw new Error("Square is not connected yet: SQUARE_ACCESS_TOKEN is not set in Vercel.")
   const response = await fetch("https://connect.squareup.com/v2/catalog/batch-upsert", {
@@ -315,7 +368,7 @@ async function upsert(batches: { objects: CatalogObject[] }[]): Promise<UpsertRe
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify({ idempotency_key: randomUUID(), batches }),
+    body: JSON.stringify({ idempotency_key: idempotencyKey, batches }),
   })
   let data: {
     objects?: CatalogObject[]
@@ -332,5 +385,10 @@ async function upsert(batches: { objects: CatalogObject[] }[]): Promise<UpsertRe
   if ((response.status === 401 || response.status === 429) && errors.length) {
     errors.splice(0, errors.length, squareMessage(data, response.status))
   }
-  return { objects: data.objects ?? [], idMappings: data.id_mappings ?? [], errors }
+  return {
+    objects: data.objects ?? [],
+    idMappings: data.id_mappings ?? [],
+    errors,
+    busy: response.status === 429,
+  }
 }
