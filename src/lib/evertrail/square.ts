@@ -85,6 +85,7 @@ export type CatalogObject = {
   present_at_all_locations?: boolean
   item_data?: {
     name?: string
+    is_archived?: boolean
     variations?: CatalogObject[]
     [key: string]: unknown
   }
