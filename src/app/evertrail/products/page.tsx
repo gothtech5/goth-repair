@@ -6,7 +6,13 @@ import { dollars, one, text, toCents, toInt, toIntOrNull, type Search } from "@/
 import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { loadCategories, pickedCategory, type Category } from "@/lib/evertrail/categories"
 import { addStock, stockToAdd } from "@/lib/evertrail/stock"
-import { archiveSquareDuplicates, duplicateSummary, sendProductsToSquare, syncSummary } from "@/lib/evertrail/square-sync"
+import {
+  archiveSquareDuplicates,
+  duplicateSummary,
+  sendOneProductToSquare,
+  sendProductsToSquare,
+  syncSummary,
+} from "@/lib/evertrail/square-sync"
 import { Shell, Field, inputClass, buttonClass, smallButtonClass, linkClass } from "@/components/evertrail/shell"
 import { CategorySelect } from "@/components/evertrail/category-select"
 
@@ -59,7 +65,9 @@ async function addProduct(formData: FormData) {
           [id]
         )
         const alert = await checkLowStock(id ?? "")
-        target = "/evertrail/products?ok=" + encodeURIComponent(`Added "${name}".` + lowStockNote(alert))
+        // Copy the new product into Square's item list right away (never blocks the save).
+        const squareNote = await sendOneProductToSquare(id ?? "")
+        target = "/evertrail/products?ok=" + encodeURIComponent(`Added "${name}".` + lowStockNote(alert) + squareNote)
       }
     } catch (e) {
       target = "/evertrail/products?err=" + encodeURIComponent(friendlyError(e))
@@ -230,7 +238,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
         <h2 className="text-lg font-semibold">Square</h2>
         <p className="mt-1 mb-3 text-sm text-neutral-700">
           Copies every product into Square&apos;s item list with the same name, price and barcode. Products already in
-          Square are updated, not copied twice. Stock stays in Evertrail.{" "}
+          Square are updated, not copied twice. Stock stays in Evertrail. New and edited products go to Square
+          automatically; use this button to resend everything.{" "}
           <Link href="/evertrail/square" className={linkClass}>
             See Square sales
           </Link>
