@@ -51,15 +51,26 @@ const ITEMS_PER_REQUEST = 20
 const BATCH_OBJECT_LIMIT = 900
 // Stop starting new requests after this long, so the page always answers (the limit is 120 s).
 const TIME_BUDGET_MS = 85_000
+// Adding or editing one product waits at most this long for Square, so saving stays quick.
+const ONE_PRODUCT_BUDGET_MS = 20_000
 const FIRST_RETRY_WAIT_MS = 2_000
 const LONGEST_RETRY_WAIT_MS = 20_000
 
-export async function sendProductsToSquare(): Promise<SyncResult> {
+export async function sendProductsToSquare(
+  options: { onlyIds?: number[]; timeBudgetMs?: number } = {}
+): Promise<SyncResult> {
   await ensureSquareSchema()
 
-  const rows = await sql(
-    `select id, name, barcode, price_cents, square_item_id, square_variation_id from products order by id`
-  )
+  const only = options.onlyIds?.filter((id) => Number.isInteger(id) && id > 0)
+  const rows = only
+    ? await sql(
+        `select id, name, barcode, price_cents, square_item_id, square_variation_id from products
+          where id = any($1::int[]) order by id`,
+        ["{" + only.join(",") + "}"]
+      )
+    : await sql(
+        `select id, name, barcode, price_cents, square_item_id, square_variation_id from products order by id`
+      )
   const products: ProductRow[] = rows.map((r) => ({
     id: r.id ?? "",
     name: (r.name ?? "").trim() || "Unnamed product",
@@ -79,7 +90,7 @@ export async function sendProductsToSquare(): Promise<SyncResult> {
     duplicates: 0,
     errors: [],
   }
-  const deadline = Date.now() + TIME_BUDGET_MS
+  const deadline = Date.now() + (options.timeBudgetMs ?? TIME_BUDGET_MS)
   if (!products.length) return result
 
   // 1. Everything already in Square's item list, by variation ID and by SKU / UPC.
@@ -94,7 +105,9 @@ export async function sendProductsToSquare(): Promise<SyncResult> {
       if (!byCode.has(code)) byCode.set(code, v)
     }
   }
-  const takenVariationIds = new Set(products.map((p) => p.variationId).filter(Boolean) as string[])
+  // Square items already linked to any Evertrail product (not only the ones being sent now).
+  const linkedRows = await sql(`select square_variation_id from products where square_variation_id is not null`)
+  const takenVariationIds = new Set(linkedRows.map((r) => r.square_variation_id ?? "").filter(Boolean))
 
   // 2. Decide for each product: update the Square item it is linked to, link to an item with the
   //    same barcode, or create a new item.
@@ -182,7 +195,7 @@ export async function sendProductsToSquare(): Promise<SyncResult> {
   }
 
   // 6. Count leftover copies in Square (same barcode, not the item Evertrail uses).
-  result.duplicates = (await findDuplicates(catalog)).length
+  if (!only) result.duplicates = (await findDuplicates(catalog)).length
   return result
 }
 
@@ -203,6 +216,32 @@ async function saveSquareIds(saved: { pid: number; item_id: string; var_id: stri
       where p.id = t.pid`,
     [payload]
   )
+}
+
+/**
+ * Sends one product to Square right after it is added or edited in Evertrail.
+ * Never throws: the Evertrail save has already happened, so a Square problem only adds a note
+ * to the on-screen message, and the "Send products to Square" button can retry later.
+ * Returns "" when Square is not connected.
+ */
+export async function sendOneProductToSquare(productId: number | string): Promise<string> {
+  if (!process.env.SQUARE_ACCESS_TOKEN?.trim()) return ""
+  const id = Number(productId)
+  if (!Number.isInteger(id) || id <= 0) return ""
+  try {
+    const r = await sendProductsToSquare({ onlyIds: [id], timeBudgetMs: ONE_PRODUCT_BUDGET_MS })
+    if (r.created) return " Added to Square."
+    if (r.updated || r.linked) return " Updated in Square."
+    if (r.pending) return " Square is busy, so it is not in Square yet: press Send products to Square in a minute."
+    if (r.failed) {
+      return " Not sent to Square" + (r.errors.length ? " (" + r.errors[0] + ")" : "") + ". Press Send products to Square to try again."
+    }
+    return ""
+  } catch (error) {
+    console.error("Square auto-send failed:", error)
+    const reason = error instanceof Error ? error.message : String(error)
+    return ` Not sent to Square (${reason}). Press Send products to Square to try again.`
+  }
 }
 
 /** One sentence for the Products page. */
