@@ -6,8 +6,8 @@ import { dollars, one, text, toCents, toInt, toIntOrNull, type Search } from "@/
 import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { loadCategories, pickedCategory, type Category } from "@/lib/evertrail/categories"
 import { addStock, stockToAdd } from "@/lib/evertrail/stock"
-import { sendProductsToSquare, syncSummary } from "@/lib/evertrail/square-sync"
-import { Shell, Field, inputClass, buttonClass, linkClass } from "@/components/evertrail/shell"
+import { archiveSquareDuplicates, duplicateSummary, sendProductsToSquare, syncSummary } from "@/lib/evertrail/square-sync"
+import { Shell, Field, inputClass, buttonClass, smallButtonClass, linkClass } from "@/components/evertrail/shell"
 import { CategorySelect } from "@/components/evertrail/category-select"
 
 export const dynamic = "force-dynamic"
@@ -101,6 +101,21 @@ async function sendToSquare() {
     target = "/evertrail/products?" + (result.failed || result.pending ? "err=" : "ok=") + encodeURIComponent(message)
   } catch (e) {
     target = "/evertrail/products?err=" + encodeURIComponent("Could not send products to Square. " + friendlyError(e))
+  }
+  redirect(target)
+}
+
+async function hideSquareDuplicates() {
+  "use server"
+  await requireAuth()
+
+  let target = ""
+  try {
+    const result = await archiveSquareDuplicates()
+    const ok = result.archived === result.found
+    target = "/evertrail/products?" + (ok ? "ok=" : "err=") + encodeURIComponent(duplicateSummary(result))
+  } catch (e) {
+    target = "/evertrail/products?err=" + encodeURIComponent("Could not check Square for duplicates. " + friendlyError(e))
   }
   redirect(target)
 }
@@ -220,11 +235,22 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
             See Square sales
           </Link>
         </p>
-        <form action={sendToSquare}>
-          <button type="submit" className={buttonClass}>
-            Send products to Square
-          </button>
-        </form>
+        <div className="flex flex-wrap gap-3">
+          <form action={sendToSquare}>
+            <button type="submit" className={buttonClass}>
+              Send products to Square
+            </button>
+          </form>
+          <form action={hideSquareDuplicates}>
+            <button type="submit" className={smallButtonClass + " py-2"}>
+              Hide duplicates in Square
+            </button>
+          </form>
+        </div>
+        <p className="mt-2 text-xs text-neutral-600">
+          &quot;Hide duplicates&quot; archives extra Square items that have the same barcode as an Evertrail product but
+          are not the one Evertrail uses. Archived items are hidden, not deleted.
+        </p>
       </section>
 
       <form method="get" className="mb-2 flex gap-2">
