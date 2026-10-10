@@ -6,10 +6,13 @@ import { dollars, one, text, toCents, toInt, toIntOrNull, type Search } from "@/
 import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { loadCategories, pickedCategory, type Category } from "@/lib/evertrail/categories"
 import { addStock, stockToAdd } from "@/lib/evertrail/stock"
+import { sendOneProductToSquare } from "@/lib/evertrail/square-sync"
 import { Shell, Field, inputClass, buttonClass, linkClass } from "@/components/evertrail/shell"
 import { CategorySelect } from "@/components/evertrail/category-select"
 
 export const dynamic = "force-dynamic"
+// Saving also sends the product to Square, which can take a few seconds.
+export const maxDuration = 60
 
 async function saveProduct(formData: FormData) {
   "use server"
@@ -43,7 +46,9 @@ async function saveProduct(formData: FormData) {
         ]
       )
       const alert = await checkLowStock(id)
-      target = "/evertrail/products?ok=" + encodeURIComponent(`Saved "${name}".` + lowStockNote(alert))
+      // Send the new name, price or barcode to Square right away (never blocks the save).
+      const squareNote = await sendOneProductToSquare(id)
+      target = "/evertrail/products?ok=" + encodeURIComponent(`Saved "${name}".` + lowStockNote(alert) + squareNote)
     } catch (e) {
       target += "?err=" + encodeURIComponent(friendlyError(e))
     }
