@@ -8,6 +8,7 @@ import { loadCategories, pickedCategory, type Category } from "@/lib/evertrail/c
 import { addStock, stockToAdd } from "@/lib/evertrail/stock"
 import { sendOneProductToSquare } from "@/lib/evertrail/square-sync"
 import { deleteProduct, ensureProductSchema } from "@/lib/evertrail/products"
+import { removeProductFromSquare } from "@/lib/evertrail/square-delete"
 import { Shell, Field, inputClass, buttonClass, linkClass } from "@/components/evertrail/shell"
 import { CategorySelect } from "@/components/evertrail/category-select"
 import { PriceDiscountFields } from "@/components/evertrail/price-discount"
@@ -94,13 +95,22 @@ async function removeProduct(formData: FormData) {
   let target = ""
   try {
     const deleted = await deleteProduct(id)
-    target = deleted
-      ? "/evertrail/products?ok=" +
-        encodeURIComponent(
-          `Deleted "${deleted.name}".` +
-            (deleted.inSquare ? " It is still listed in Square; archive it there if you no longer sell it." : "")
-        )
-      : "/evertrail/products?err=" + encodeURIComponent("That product was already deleted.")
+    if (!deleted) {
+      target = "/evertrail/products?err=" + encodeURIComponent("That product was already deleted.")
+    } else {
+      // Evertrail delete is done. Now the Square item list; a Square problem never undoes it.
+      const square = await removeProductFromSquare(deleted)
+      target =
+        square === "failed"
+          ? "/evertrail/products?err=" +
+            encodeURIComponent(
+              `"${deleted.name}": Deleted from Evertrail, but could not remove it from Square. Remove it in Square by hand.`
+            )
+          : "/evertrail/products?ok=" +
+            encodeURIComponent(
+              square === "removed" ? `Deleted "${deleted.name}" from Evertrail and Square.` : `Deleted "${deleted.name}".`
+            )
+    }
   } catch (e) {
     target = `/evertrail/products/${id}?err=` + encodeURIComponent("Could not delete the product. " + friendlyError(e))
   }
