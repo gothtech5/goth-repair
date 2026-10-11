@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
 import { one, text, toInt, type Search } from "@/lib/evertrail/format"
 import { checkLowStock } from "@/lib/evertrail/low-stock"
+import { ensureProductSchema } from "@/lib/evertrail/products"
 import { ScanInput } from "@/components/evertrail/scan-input"
 import { Shell, Field, inputClass, buttonClass, smallButtonClass, linkClass } from "@/components/evertrail/shell"
 
@@ -13,13 +14,17 @@ function back(poId: number, kind: "ok" | "err", message: string) {
   return `/evertrail/po/${poId}?${kind}=${encodeURIComponent(message)}`
 }
 
-/** Marks the PO "received" once every line is fully received, otherwise "open". */
+/**
+ * Marks the PO "received" once every line is fully received, otherwise "open".
+ * Lines for products that were deleted no longer count.
+ */
 async function refreshStatus(poId: number) {
   await sql(
     `update purchase_orders po
         set status = case
           when exists (select 1 from purchase_order_items i where i.po_id = po.id)
-           and not exists (select 1 from purchase_order_items i where i.po_id = po.id and i.qty_received < i.qty_ordered)
+           and not exists (select 1 from purchase_order_items i
+                            where i.po_id = po.id and i.product_id is not null and i.qty_received < i.qty_ordered)
           then 'received' else 'open' end
       where po.id = $1`,
     [poId]
@@ -200,10 +205,15 @@ export default async function PurchaseOrderPage({
     )
     po = rows[0]
     if (po) {
+      await ensureProductSchema()
+      // A deleted product's line still shows, using the copy of its details saved when it was deleted.
       lines = await sql(
-        `select i.id, i.product_id, i.qty_ordered, i.qty_received, p.name, p.sku, p.barcode
+        `select i.id, i.product_id, i.qty_ordered, i.qty_received,
+                coalesce(p.name, i.product_name, 'Deleted product') as name,
+                coalesce(p.sku, i.product_sku) as sku,
+                coalesce(p.barcode, i.product_barcode) as barcode
            from purchase_order_items i
-           join products p on p.id = i.product_id
+           left join products p on p.id = i.product_id
           where i.po_id = $1
           order by i.id`,
         [poId]
@@ -288,9 +298,13 @@ export default async function PurchaseOrderPage({
           {lines.map((line) => {
             const ordered = Number(line.qty_ordered)
             const received = Number(line.qty_received)
+            const deleted = !line.product_id
             return (
               <tr key={line.id} className="border-b border-neutral-200">
-                <td className="py-2 pr-3">{line.name}</td>
+                <td className="py-2 pr-3">
+                  {line.name}
+                  {deleted ? <span className="ml-1 text-xs text-neutral-600">(product deleted)</span> : null}
+                </td>
                 <td className="py-2 pr-3 font-mono">{line.sku}</td>
                 <td className="py-2 pr-3 font-mono">{line.barcode}</td>
                 <td className="py-2 pr-3 text-right">{ordered}</td>
@@ -300,7 +314,7 @@ export default async function PurchaseOrderPage({
                 </td>
                 <td className="py-2">
                   <div className="flex flex-wrap gap-2">
-                    {received < ordered ? (
+                    {received < ordered && !deleted ? (
                       <form action={receiveRest}>
                         <input type="hidden" name="po_id" value={po.id ?? ""} />
                         <input type="hidden" name="product_id" value={line.product_id ?? ""} />
@@ -318,9 +332,11 @@ export default async function PurchaseOrderPage({
                         </button>
                       </form>
                     ) : null}
-                    <Link href={`/evertrail/labels?ids=${line.product_id}`} className={linkClass}>
-                      Label
-                    </Link>
+                    {deleted ? null : (
+                      <Link href={`/evertrail/labels?ids=${line.product_id}`} className={linkClass}>
+                        Label
+                      </Link>
+                    )}
                   </div>
                 </td>
               </tr>

@@ -2,13 +2,16 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
-import { dollars, one, text, toCents, toInt, toIntOrNull, type Search } from "@/lib/evertrail/format"
+import { dollars, one, readDiscount, text, toCents, toInt, toIntOrNull, type Search } from "@/lib/evertrail/format"
 import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { loadCategories, pickedCategory, type Category } from "@/lib/evertrail/categories"
 import { addStock, stockToAdd } from "@/lib/evertrail/stock"
 import { sendOneProductToSquare } from "@/lib/evertrail/square-sync"
+import { deleteProduct, ensureProductSchema } from "@/lib/evertrail/products"
 import { Shell, Field, inputClass, buttonClass, linkClass } from "@/components/evertrail/shell"
 import { CategorySelect } from "@/components/evertrail/category-select"
+import { PriceDiscountFields } from "@/components/evertrail/price-discount"
+import { DeleteProduct } from "@/components/evertrail/delete-product"
 
 export const dynamic = "force-dynamic"
 // Saving also sends the product to Square, which can take a few seconds.
@@ -22,16 +25,20 @@ async function saveProduct(formData: FormData) {
   const name = text(formData.get("name"))
   const sku = text(formData.get("sku"))
   const barcode = text(formData.get("barcode"))
+  const discount = readDiscount(formData.get("price"), formData.get("discount"))
   let target = `/evertrail/products/${id}`
 
   if (!name || !sku) {
     target += "?err=" + encodeURIComponent("Name and SKU are required.")
+  } else if (discount.error) {
+    target += "?err=" + encodeURIComponent(discount.error + " Nothing was saved.")
   } else {
     try {
+      await ensureProductSchema()
       await sql(
         `update products
             set name = $2, sku = $3, barcode = $4, price_cents = $5, cost_cents = $6, quantity_on_hand = $7,
-                low_stock_threshold = $8, category_id = $9::int
+                low_stock_threshold = $8, category_id = $9::int, discount_cents = $10
           where id = $1`,
         [
           id,
@@ -43,6 +50,7 @@ async function saveProduct(formData: FormData) {
           Math.max(0, toInt(formData.get("quantity"))),
           toIntOrNull(formData.get("low_stock_threshold")),
           pickedCategory(formData.get("category_id")),
+          discount.cents,
         ]
       )
       const alert = await checkLowStock(id)
@@ -78,6 +86,27 @@ async function addStockHere(formData: FormData) {
   redirect(target)
 }
 
+async function removeProduct(formData: FormData) {
+  "use server"
+  await requireAuth()
+
+  const id = toInt(formData.get("id"))
+  let target = ""
+  try {
+    const deleted = await deleteProduct(id)
+    target = deleted
+      ? "/evertrail/products?ok=" +
+        encodeURIComponent(
+          `Deleted "${deleted.name}".` +
+            (deleted.inSquare ? " It is still listed in Square; archive it there if you no longer sell it." : "")
+        )
+      : "/evertrail/products?err=" + encodeURIComponent("That product was already deleted.")
+  } catch (e) {
+    target = `/evertrail/products/${id}?err=` + encodeURIComponent("Could not delete the product. " + friendlyError(e))
+  }
+  redirect(target)
+}
+
 export default async function EditProductPage({
   params,
   searchParams,
@@ -93,6 +122,7 @@ export default async function EditProductPage({
   let product: Awaited<ReturnType<typeof sql>>[number] | undefined
   let categories: Category[] = []
   try {
+    await ensureProductSchema()
     const rows = await sql(`select * from products where id = $1`, [toInt(id, -1)])
     product = rows[0]
     categories = await loadCategories()
@@ -154,9 +184,10 @@ export default async function EditProductPage({
         <Field label="Cost ($)">
           <input name="cost" inputMode="decimal" defaultValue={dollars(product.cost_cents)} className={inputClass} />
         </Field>
-        <Field label="Price ($)">
-          <input name="price" inputMode="decimal" defaultValue={dollars(product.price_cents)} className={inputClass} />
-        </Field>
+        <PriceDiscountFields
+          price={dollars(product.price_cents)}
+          discount={Number(product.discount_cents ?? 0) > 0 ? dollars(product.discount_cents) : ""}
+        />
         <Field label="Remind me when stock is at or below (optional)">
           <input
             name="low_stock_threshold"
@@ -191,6 +222,8 @@ export default async function EditProductPage({
           </Link>
         </div>
       </form>
+
+      <DeleteProduct id={product.id ?? ""} name={product.name ?? ""} action={removeProduct} />
     </Shell>
   )
 }

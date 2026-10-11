@@ -2,7 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
-import { dollars, one, text, toInt, type Search } from "@/lib/evertrail/format"
+import { dollars, one, salePriceCents, text, toInt, type Search } from "@/lib/evertrail/format"
 import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { CameraScanner } from "@/components/evertrail/camera-scanner"
 import { ScanInput } from "@/components/evertrail/scan-input"
@@ -71,7 +71,15 @@ export default async function ScanPage({ searchParams }: { searchParams: Search 
             <span className="font-mono">{product.barcode ?? "none"}</span>
           </p>
           <p className="mt-3 text-sm">
-            Price ${dollars(product.price_cents)} · Cost ${dollars(product.cost_cents)}
+            {Number(product.discount_cents ?? 0) > 0 ? (
+              <>
+                Sale price ${dollars(salePriceCents(product.price_cents, product.discount_cents))} (was{" "}
+                <s>${dollars(product.price_cents)}</s>)
+              </>
+            ) : (
+              <>Price ${dollars(product.price_cents)}</>
+            )}{" "}
+            · Cost ${dollars(product.cost_cents)}
           </p>
           <p className="mt-3 text-3xl font-bold">{product.quantity_on_hand} in stock</p>
           {product.low_stock_threshold !== null ? (

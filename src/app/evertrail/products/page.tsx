@@ -2,7 +2,17 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
-import { dollars, one, text, toCents, toInt, toIntOrNull, type Search } from "@/lib/evertrail/format"
+import {
+  dollars,
+  one,
+  readDiscount,
+  salePriceCents,
+  text,
+  toCents,
+  toInt,
+  toIntOrNull,
+  type Search,
+} from "@/lib/evertrail/format"
 import { checkLowStock, lowStockNote } from "@/lib/evertrail/low-stock"
 import { loadCategories, pickedCategory, type Category } from "@/lib/evertrail/categories"
 import { addStock, stockToAdd } from "@/lib/evertrail/stock"
@@ -13,8 +23,10 @@ import {
   sendProductsToSquare,
   syncSummary,
 } from "@/lib/evertrail/square-sync"
+import { ensureProductSchema } from "@/lib/evertrail/products"
 import { Shell, Field, inputClass, buttonClass, smallButtonClass, linkClass } from "@/components/evertrail/shell"
 import { CategorySelect } from "@/components/evertrail/category-select"
+import { PriceDiscountFields } from "@/components/evertrail/price-discount"
 
 export const dynamic = "force-dynamic"
 // "Send products to Square" can take a while with many products.
@@ -28,12 +40,16 @@ async function addProduct(formData: FormData) {
   const sku = text(formData.get("sku"))
   const barcode = text(formData.get("barcode"))
   const quantity = Math.max(0, toInt(formData.get("quantity")))
+  const discount = readDiscount(formData.get("price"), formData.get("discount"))
   let target = ""
 
   if (!name) {
     target = "/evertrail/products?err=" + encodeURIComponent("Product name is required.")
+  } else if (discount.error) {
+    target = "/evertrail/products?err=" + encodeURIComponent(discount.error + " The product was not added.")
   } else {
     try {
+      await ensureProductSchema()
       // No duplicates: if this barcode is already on a product, do not create a second one.
       // Offer to add stock to the existing product instead.
       const existing = barcode ? await sql(`select id from products where barcode = $1 limit 1`, [barcode]) : []
@@ -42,8 +58,9 @@ async function addProduct(formData: FormData) {
       } else {
         // A blank SKU or barcode gets filled in automatically from the product number.
         const rows = await sql(
-          `insert into products (sku, barcode, name, price_cents, cost_cents, quantity_on_hand, low_stock_threshold, category_id)
-           values (coalesce($1, 'TMP-' || md5(random()::text || clock_timestamp()::text)), $2, $3, $4, $5, $6, $7, $8::int)
+          `insert into products
+                  (sku, barcode, name, price_cents, cost_cents, quantity_on_hand, low_stock_threshold, category_id, discount_cents)
+           values (coalesce($1, 'TMP-' || md5(random()::text || clock_timestamp()::text)), $2, $3, $4, $5, $6, $7, $8::int, $9)
            returning id`,
           [
             sku || null,
@@ -54,6 +71,7 @@ async function addProduct(formData: FormData) {
             quantity,
             toIntOrNull(formData.get("low_stock_threshold")),
             pickedCategory(formData.get("category_id")),
+            discount.cents,
           ]
         )
         const id = rows[0].id
@@ -141,6 +159,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   let categories: Category[] = []
   let duplicate: Awaited<ReturnType<typeof sql>>[number] | undefined
   try {
+    await ensureProductSchema()
     categories = await loadCategories()
     products = q
       ? await sql(
@@ -214,9 +233,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
           <Field label="Quantity in stock">
             <input name="quantity" type="number" min="0" defaultValue="0" className={inputClass} />
           </Field>
-          <Field label="Price ($)">
-            <input name="price" inputMode="decimal" placeholder="0.00" className={inputClass} />
-          </Field>
+          <PriceDiscountFields pricePlaceholder="0.00" />
           <Field label="Cost ($)">
             <input name="cost" inputMode="decimal" placeholder="0.00" className={inputClass} />
           </Field>
@@ -304,7 +321,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
                 <td className="py-2 pr-3">{(p.category_id && categoryPath.get(p.category_id)) || "-"}</td>
                 <td className="py-2 pr-3 font-mono">{p.sku}</td>
                 <td className="py-2 pr-3 font-mono">{p.barcode}</td>
-                <td className="py-2 pr-3 text-right">${dollars(p.price_cents)}</td>
+                <td className="py-2 pr-3 text-right whitespace-nowrap">
+                  {Number(p.discount_cents ?? 0) > 0 ? (
+                    <>
+                      <s className="text-neutral-500">${dollars(p.price_cents)}</s>{" "}
+                      <span className="font-semibold text-red-700">
+                        ${dollars(salePriceCents(p.price_cents, p.discount_cents))}
+                      </span>
+                    </>
+                  ) : (
+                    <>${dollars(p.price_cents)}</>
+                  )}
+                </td>
                 <td className="py-2 pr-3 text-right">${dollars(p.cost_cents)}</td>
                 <td className="py-2 pr-3 text-right">{p.quantity_on_hand}</td>
                 <td className="py-2 pr-3 text-right">{p.low_stock_threshold ?? "-"}</td>

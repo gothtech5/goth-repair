@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/evertrail/auth"
 import { sql, friendlyError } from "@/lib/evertrail/db"
-import { dollars, one, type Search } from "@/lib/evertrail/format"
+import { dollars, one, salePriceCents, type Search } from "@/lib/evertrail/format"
+import { ensureProductSchema } from "@/lib/evertrail/products"
 import { Shell } from "@/components/evertrail/shell"
 import { LabelPrinter, type LabelProduct } from "@/components/evertrail/label-printer"
 
@@ -17,12 +18,16 @@ export default async function LabelsPage({ searchParams }: { searchParams: Searc
   let error = ""
   let products: LabelProduct[] = []
   try {
-    const rows = await sql(`select id, name, sku, barcode, price_cents from products order by name limit 2000`)
+    await ensureProductSchema()
+    const rows = await sql(
+      `select id, name, sku, barcode, price_cents, discount_cents from products order by name limit 2000`
+    )
     products = rows.map((r) => ({
       id: r.id ?? "",
       name: r.name ?? "",
       code: r.barcode || r.sku || "",
-      price: dollars(r.price_cents),
+      // The sale price: the price minus any discount.
+      price: dollars(salePriceCents(r.price_cents, r.discount_cents)),
     }))
   } catch (e) {
     error = "Could not load products: " + friendlyError(e)
