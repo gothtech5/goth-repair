@@ -56,7 +56,13 @@ async function createSchema() {
   }
 }
 
-export type DeletedProduct = { name: string; inSquare: boolean }
+export type DeletedProduct = {
+  name: string
+  sku: string | null
+  barcode: string | null
+  square_item_id: string | null
+  square_variation_id: string | null
+}
 
 /**
  * Deletes a product for good. Returns null if it was already gone.
@@ -105,6 +111,13 @@ export async function deleteProduct(id: number): Promise<DeletedProduct | null> 
       )
     }
 
-    return { name: gone[0].name ?? "", inSquare: Boolean(gone[0].square_variation_id) }
+    const row = gone[0]
+    return {
+      name: row.name ?? "",
+      sku: row.sku ?? null,
+      barcode: row.barcode ?? null,
+      square_item_id: row.square_item_id ?? null,
+      square_variation_id: row.square_variation_id ?? null,
+    }
   }
 }
