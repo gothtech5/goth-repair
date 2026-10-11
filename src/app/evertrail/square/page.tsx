@@ -113,7 +113,11 @@ export default async function SquareSalesPage({ searchParams }: { searchParams: 
           <Link href="/evertrail/products" className={linkClass}>
             Send products to Square
           </Link>{" "}
-          on the Products page.
+          on the Products page. To delete Square items that are no longer in Evertrail, use{" "}
+          <Link href="/evertrail/square/cleanup" className={linkClass}>
+            Square cleanup
+          </Link>
+          .
         </p>
       </section>
 
