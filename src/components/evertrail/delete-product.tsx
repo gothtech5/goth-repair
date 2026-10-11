@@ -34,6 +34,7 @@ export function DeleteProduct({
           <p id="delete-question" className="text-base font-semibold text-red-900">
             Delete {name}? This cannot be undone.
           </p>
+          <p className="mt-1 text-base text-red-900">This also removes it from Square.</p>
           <form action={action} className="mt-4 flex gap-3">
             <input type="hidden" name="id" value={id} />
             <button

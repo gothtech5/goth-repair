@@ -329,10 +329,10 @@ function updatedItem(item: CatalogObject, plans: Plan[]): CatalogObject {
   return { ...item, item_data: itemData }
 }
 
-type CatalogEntry = { variation: CatalogObject; item: CatalogObject; archived: boolean }
+export type CatalogEntry = { variation: CatalogObject; item: CatalogObject; archived: boolean }
 
 /** Every item in Square's item list (with its variations), skipping deleted ones. */
-async function listCatalogItems(): Promise<CatalogEntry[]> {
+export async function listCatalogItems(): Promise<CatalogEntry[]> {
   const out: CatalogEntry[] = []
   let cursor = ""
   for (let page = 0; page < 500; page++) {
@@ -351,7 +351,7 @@ async function listCatalogItems(): Promise<CatalogEntry[]> {
   return out
 }
 
-function codesOf(variation: CatalogObject): string[] {
+export function codesOf(variation: CatalogObject): string[] {
   const data = variation.item_variation_data
   return [...new Set([data?.sku, data?.upc].map((c) => (c ?? "").trim()).filter(Boolean))]
 }

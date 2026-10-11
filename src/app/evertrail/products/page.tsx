@@ -259,6 +259,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
           automatically; use this button to resend everything.{" "}
           <Link href="/evertrail/square" className={linkClass}>
             See Square sales
+          </Link> ·{" "}
+          <Link href="/evertrail/square/cleanup" className={linkClass}>
+            Square cleanup
           </Link>
         </p>
         <div className="flex flex-wrap gap-3">
