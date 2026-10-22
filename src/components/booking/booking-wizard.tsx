@@ -22,6 +22,7 @@ import { ScheduleStep } from "./steps/schedule-step"
 import { ShippingStep } from "./steps/shipping-step"
 import { ContactStep } from "./steps/contact-step"
 import { ConfirmationStep } from "./steps/confirmation-step"
+import { HalloweenWideBanner } from "@/components/halloween/promo-banner"
 
 const VALID_CATEGORIES: DeviceCategory[] = ["phone", "tablet", "computer"]
 
@@ -98,6 +99,9 @@ export function BookingWizard() {
   return (
     <div className="mx-auto max-w-[1120px] px-6 py-10 md:py-16">
       <ProgressBar currentStep={state.step} repairType={state.repairType} onStepClick={handleStepClick} />
+      {(state.step === "device" || state.step === "model" || state.step === "issue") && (
+        <HalloweenWideBanner className="mt-8" />
+      )}
       <div className={showSidebar ? "mt-10 grid gap-10 md:mt-14 lg:grid-cols-[1fr_300px]" : "mt-10 md:mt-14"}>
         <div>
           {state.step === "device" && (
