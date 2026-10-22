@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer"
 import "./globals.css"
 import { PublicOnly } from "@/components/layout/public-only"
 import { ConsentManager } from "@/components/consent/consent-manager"
+import { HalloweenPopup } from "@/components/halloween/halloween-popup"
 
 
 const inter = Inter({ subsets: ["latin"] })
@@ -53,6 +54,8 @@ export default function RootLayout({
               Vercel Analytics are loaded from inside it, only after the
               visitor's cookie choice allows them. */}
           <ConsentManager />
+          {/* Halloween 2026 offer popup (switches itself off after Oct 31). */}
+          <HalloweenPopup />
         </PublicOnly>
       </body>
     </html>

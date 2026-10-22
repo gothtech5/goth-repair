@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/evertrail/scan", label: "Scan" },
   { href: "/evertrail/po", label: "Purchase orders" },
   { href: "/evertrail/square", label: "Square sales" },
+  { href: "/evertrail/halloween", label: "Halloween signups" },
 ]
 
 export const inputClass =

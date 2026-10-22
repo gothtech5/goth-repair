@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <main className="mx-auto max-w-[720px] px-6 py-16">
       <h1 className="text-3xl font-bold text-balance">Privacy Policy</h1>
       <p className="mt-2 text-sm text-text-secondary">
-        Last updated: October 5, 2026
+        Last updated: October 21, 2026
       </p>
 
       <div className="mt-10 space-y-8 text-sm leading-relaxed text-text-secondary">
@@ -33,6 +33,11 @@ export default function PrivacyPage() {
             <li>Device type, repair details, and any notes you add</li>
             <li>Your mailing address, if you request a mail-in repair</li>
           </ul>
+          <p className="mt-4">
+            When you sign up for an offer, such as our Halloween discount, we
+            collect your email address, the date you signed up, and whether you
+            ticked the optional box to receive news and offers from us.
+          </p>
           <p className="mt-4">
             <strong>Information collected automatically.</strong> When you
             browse this website, we and the tools listed below may collect:
@@ -64,8 +69,14 @@ export default function PrivacyPage() {
             </li>
             <li>To contact you about your repair.</li>
             <li>
+              To email you a discount code you asked for, and to make sure each
+              offer is used once per customer.
+            </li>
+            <li>
               To send you repair tips and offers, only if you tick that box
-              when booking. You can unsubscribe at any time.
+              when booking or signing up for an offer. You can unsubscribe at
+              any time by replying &ldquo;unsubscribe&rdquo; to any of our
+              emails or by emailing us.
             </li>
             <li>
               To understand our website traffic and how visitors use the site,
@@ -93,7 +104,12 @@ export default function PrivacyPage() {
               repair appointments
             </li>
             <li>
-              <strong>Resend</strong> — to send booking confirmation emails
+              <strong>Resend</strong> — to send booking confirmation and
+              discount-code emails
+            </li>
+            <li>
+              <strong>Neon</strong> (through Vercel) — to securely store offer
+              signups
             </li>
             <li>
               <strong>Vercel</strong> — to host this website, and Vercel Web
@@ -196,7 +212,8 @@ export default function PrivacyPage() {
           </h2>
           <p className="mt-2">
             We retain your booking information only as long as necessary to
-            complete your repair service. You may request deletion of your
+            complete your repair service. Offer signup emails are kept until
+            you ask us to delete them. You may request deletion of your
             personal data at any time by contacting us. Cookie lifetimes are
             listed in our{" "}
             <Link href="/cookies" className={linkClass}>

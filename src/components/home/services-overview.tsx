@@ -1,5 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
+import { HalloweenCardBanner } from "@/components/halloween/promo-banner"
 
 const SERVICES = [
   {
@@ -55,37 +56,42 @@ export function ServicesOverview() {
         </p>
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
           {SERVICES.map((service) => (
-            <Link
+            <div
               key={service.title}
-              href={`/book?category=${service.category}`}
-              className="group relative flex flex-col overflow-hidden rounded-xl border border-border-light bg-surface p-6 md:p-8"
+              className="flex flex-col overflow-hidden rounded-xl border border-border-light bg-surface"
             >
-              {service.image && (
-                <div className="mb-4 flex justify-end">
-                  <Image
-                    src={service.image}
-                    alt={service.title}
-                    width={160}
-                    height={80}
-                    className="h-[80px] w-auto object-contain"
-                  />
-                </div>
-              )}
-              <h3 className="text-lg font-medium">{service.title}</h3>
-              <p className="mt-2 text-sm text-text-secondary text-pretty">
-                {service.description}
-              </p>
-              <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5">
-                {service.repairs.map((repair) => (
-                  <li key={repair} className="text-sm text-text-tertiary before:mr-1.5 before:inline-block before:size-1.5 before:rounded-full before:bg-accent before:align-middle before:content-['']">
-                    {repair}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-auto pt-5 text-sm font-medium text-accent group-hover:underline">
-                {service.cta} &rarr;
-              </p>
-            </Link>
+              <Link
+                href={`/book?category=${service.category}`}
+                className="group relative flex flex-1 flex-col p-6 md:p-8"
+              >
+                {service.image && (
+                  <div className="mb-4 flex justify-end">
+                    <Image
+                      src={service.image}
+                      alt={service.title}
+                      width={160}
+                      height={80}
+                      className="h-[80px] w-auto object-contain"
+                    />
+                  </div>
+                )}
+                <h3 className="text-lg font-medium">{service.title}</h3>
+                <p className="mt-2 text-sm text-text-secondary text-pretty">
+                  {service.description}
+                </p>
+                <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                  {service.repairs.map((repair) => (
+                    <li key={repair} className="text-sm text-text-tertiary before:mr-1.5 before:inline-block before:size-1.5 before:rounded-full before:bg-accent before:align-middle before:content-['']">
+                      {repair}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-auto pt-5 text-sm font-medium text-accent group-hover:underline">
+                  {service.cta} &rarr;
+                </p>
+              </Link>
+              <HalloweenCardBanner service={service.title} />
+            </div>
           ))}
         </div>
       </div>
