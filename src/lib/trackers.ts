@@ -83,7 +83,7 @@ function startGoogle(choice: ConsentChoice): void {
   }
   if (choice.analytics && !started.analytics) {
     started.analytics = true
-    gtag("config", GA_MEASUREMENT_ID)
+    gtag("config", GA_MEASUREMENT_ID, isGaDebug() ? { debug_mode: true } : {})
   }
   if (choice.advertising && !started.ads) {
     started.ads = true
@@ -118,6 +118,73 @@ function startMetaPixel(): void {
 export function applyTrackers(choice: ConsentChoice): void {
   if (choice.analytics || choice.advertising || window.gtag) startGoogle(choice)
   if (choice.advertising) startMetaPixel()
+}
+
+/** Remembers which bookings were already reported, so each is counted once. */
+const LEAD_SENT_KEY = "gt_leads_sent"
+const leadsSentThisPage = new Set<string>()
+
+function leadAlreadySent(bookingRef: string): boolean {
+  if (leadsSentThisPage.has(bookingRef)) return true
+  try {
+    const list = JSON.parse(window.localStorage.getItem(LEAD_SENT_KEY) ?? "[]")
+    return Array.isArray(list) && list.includes(bookingRef)
+  } catch {
+    return false
+  }
+}
+
+function markLeadSent(bookingRef: string): void {
+  leadsSentThisPage.add(bookingRef)
+  try {
+    const list = JSON.parse(window.localStorage.getItem(LEAD_SENT_KEY) ?? "[]")
+    const next = (Array.isArray(list) ? list : []).concat(bookingRef).slice(-20)
+    window.localStorage.setItem(LEAD_SENT_KEY, JSON.stringify(next))
+  } catch {
+    // Storage blocked (private mode etc.) — the in-page guard still applies.
+  }
+}
+
+/**
+ * True when the page was opened with ?ga_debug=1 (kept for the browser tab),
+ * so test bookings show up in GA4 DebugView and can be told apart.
+ */
+function isGaDebug(): boolean {
+  try {
+    if (new URLSearchParams(window.location.search).get("ga_debug") === "1") {
+      window.sessionStorage.setItem("gt_ga_debug", "1")
+    }
+    return window.sessionStorage.getItem("gt_ga_debug") === "1"
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Reports one successful booking to Google Analytics as `generate_lead`.
+ *
+ * Call ONLY after the server has confirmed the booking was saved.
+ * - Sends nothing unless the visitor allowed analytics cookies.
+ * - Sends each booking reference at most once (double clicks, re-renders,
+ *   going back to the confirmation screen).
+ * - Sends no personal details: only the repair type and device category.
+ */
+export function trackBookingLead(
+  bookingRef: string,
+  details: { repairType: string; deviceCategory: string },
+): void {
+  if (typeof window === "undefined" || !bookingRef) return
+  if (!started.analytics || !window.gtag) return
+  if (leadAlreadySent(bookingRef)) return
+  markLeadSent(bookingRef)
+
+  window.gtag("event", "generate_lead", {
+    send_to: GA_MEASUREMENT_ID,
+    lead_source: "online_booking",
+    repair_type: details.repairType,
+    device_category: details.deviceCategory,
+    ...(isGaDebug() ? { debug_mode: true } : {}),
+  })
 }
 
 /** Tells any tracker that is already running to stop using cookies. */

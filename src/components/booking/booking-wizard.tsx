@@ -1,6 +1,7 @@
 "use client"
 
-import { useReducer, useEffect, useState } from "react"
+import { useReducer, useEffect, useRef, useState } from "react"
+import { trackBookingLead } from "@/lib/trackers"
 import { useSearchParams } from "next/navigation"
 import { DEVICE_MODELS, BRANDS, REPAIR_ISSUES } from "@/data/devices"
 import { MapPin, Truck } from "lucide-react"
@@ -31,6 +32,7 @@ export function BookingWizard() {
   const [state, dispatch] = useReducer(bookingReducer, INITIAL_STATE)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const submittingRef = useRef(false)
 
   useEffect(() => {
     const category = searchParams.get("category") as DeviceCategory | null
@@ -54,6 +56,9 @@ export function BookingWizard() {
   }
 
   async function handleBookingSubmit(contact: ContactInfo) {
+    // Ignore extra clicks while a booking is already being sent.
+    if (submittingRef.current) return
+    submittingRef.current = true
     setSubmitting(true)
     setSubmitError(null)
 
@@ -79,15 +84,25 @@ export function BookingWizard() {
         }),
       })
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => null)
+      const data = await res.json().catch(() => null)
+      if (!res.ok || data?.success !== true) {
         throw new Error(data?.error ?? "Booking failed")
       }
 
       dispatch({ type: "SET_CONTACT", payload: contact })
+
+      // The booking is saved and confirmed — count it once in Google
+      // Analytics (only if the visitor allowed analytics; no personal data).
+      if (typeof data.bookingRef === "string") {
+        trackBookingLead(data.bookingRef, {
+          repairType: state.repairType ?? "walk-in",
+          deviceCategory: state.category ?? "unknown",
+        })
+      }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.")
     } finally {
+      submittingRef.current = false
       setSubmitting(false)
     }
   }
