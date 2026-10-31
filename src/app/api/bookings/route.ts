@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto"
 import { NextResponse } from "next/server"
 import { getCalendarClient } from "@/lib/google-calendar"
 import { sendConfirmationEmail } from "@/lib/send-confirmation-email"
@@ -134,7 +135,9 @@ export async function POST(request: Request): Promise<NextResponse> {
         shippingAddress: body.shippingAddress!,
       })
 
-      return NextResponse.json({ success: true })
+      // Random reference (no customer data) so the site can count this
+      // booking in analytics exactly once.
+      return NextResponse.json({ success: true, bookingRef: randomUUID() })
     } catch (err) {
       console.error("Mail-in email error:", err)
       return NextResponse.json({ error: "Failed to process mail-in request" }, { status: 500 })
@@ -200,7 +203,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       }
     }
 
-    return NextResponse.json({ success: true })
+    // Random reference (no customer data) so the site can count this
+    // booking in analytics exactly once.
+    return NextResponse.json({ success: true, bookingRef: randomUUID() })
   } catch (err) {
     console.error("Google Calendar API error:", err)
     return NextResponse.json({ error: "Failed to create calendar event" }, { status: 500 })
