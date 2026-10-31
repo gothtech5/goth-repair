@@ -16,9 +16,17 @@ export const metadata: Metadata = {
     "Certified technicians with over 10,000 screen repairs completed. Phone repair Minneapolis, iPad repair Minneapolis — same-day service, free diagnostics. Mail-in repairs available nationwide.",
   metadataBase: new URL("https://gothtech.repair"),
   alternates: { canonical: "/" },
+  // Black G in a white circle. Files live in /public; the Android
+  // home-screen icons are listed in src/app/manifest.ts.
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+      { url: "/icon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     title: "GothTech | Phone Repair Minneapolis & iPad Repair Minneapolis",
