@@ -4,9 +4,11 @@ import Link from "next/link"
 import { CalendarPlus, Phone, MapPin, Mail } from "lucide-react"
 import { DEVICE_MODELS, BRANDS, REPAIR_ISSUES, STORE_INFO } from "@/data/devices"
 import type { BookingState } from "@/types/booking"
+import { THANKSGIVING_DISCOUNT_LABEL } from "@/lib/thanksgiving"
 
 interface ConfirmationStepProps {
   state: BookingState
+  discountApplied: boolean
   onReset: () => void
 }
 
@@ -19,7 +21,7 @@ function buildCalendarUrl(state: BookingState, model: { name: string } | undefin
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&location=${location}&details=${details}`
 }
 
-export function ConfirmationStep({ state, onReset }: ConfirmationStepProps) {
+export function ConfirmationStep({ state, discountApplied, onReset }: ConfirmationStepProps) {
   const brand = BRANDS.find((b) => b.id === state.brand)
   const model = DEVICE_MODELS.find((m) => m.id === state.modelId)
   const selectedIssues = REPAIR_ISSUES.filter((i) => state.issues.includes(i.id))
@@ -79,6 +81,7 @@ export function ConfirmationStep({ state, onReset }: ConfirmationStepProps) {
           )}
           {state.contact?.phone && <Row label="Phone" value={state.contact.phone} />}
           {state.contact?.email && <Row label="Email" value={state.contact.email} />}
+          {discountApplied && <Row label="Discount" value={THANKSGIVING_DISCOUNT_LABEL} />}
         </dl>
       </div>
 
