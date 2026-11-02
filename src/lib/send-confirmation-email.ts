@@ -25,6 +25,8 @@ interface WalkInEmailParams {
   brand: string
   modelName: string
   issues: string
+  discountLabel: string | null
+  sourceLabel: string
 }
 
 interface MailInEmailParams {
@@ -43,6 +45,7 @@ interface MailInEmailParams {
     state: string
     zip: string
   }
+  sourceLabel: string
 }
 
 export type ConfirmationEmailParams = WalkInEmailParams | MailInEmailParams
@@ -65,7 +68,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
 }
 
 async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<void> {
-  const { eventId, customerName, email, date, timeSlot, brand, modelName, issues } = params
+  const { eventId, customerName, email, date, timeSlot, brand, modelName, issues, discountLabel, sourceLabel } = params
 
   const cancelToken = createCancelToken(eventId)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://goth-repair.vercel.app"
@@ -106,6 +109,10 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
           <td style="padding: 10px 0; color: #6b7280;">Time</td>
           <td style="padding: 10px 0; text-align: right; font-weight: 500;">${escapeHtml(timeSlot)}</td>
         </tr>
+        ${discountLabel ? `<tr>
+          <td style="padding: 10px 0; border-top: 1px solid #e5e7eb; color: #6b7280;">Discount</td>
+          <td style="padding: 10px 0; border-top: 1px solid #e5e7eb; text-align: right; font-weight: 600; color: #b84a12;">${escapeHtml(discountLabel)}</td>
+        </tr>` : ""}
       </table>
 
       <p style="margin: 32px 0 16px; font-size: 14px; color: #6b7280;">
@@ -129,6 +136,7 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
     `Issues: ${issues}`,
     `Date: ${friendlyDate}`,
     `Time: ${timeSlot}`,
+    ...(discountLabel ? [`Discount: ${discountLabel}`] : []),
     "",
     `Need to cancel? Visit: ${cancelUrl}`,
     "",
@@ -150,8 +158,17 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
     from: "bookings@gothtechnology.com",
     to: "gothtechnology5@gmail.com",
     replyTo: email,
-    subject: `New Walk-In Booking: ${customerName}`,
-    text: `New booking!\nName: ${customerName}\nEmail: ${email}\nDate: ${friendlyDate}\nTime: ${timeSlot}\nDevice: ${deviceDisplay}`,
+    subject: `${discountLabel ? "$10 OFF - " : ""}New Walk-In Booking: ${customerName}`,
+    text: [
+      "New booking!",
+      ...(discountLabel ? [`DISCOUNT: ${discountLabel}`] : []),
+      `Name: ${customerName}`,
+      `Email: ${email}`,
+      `Date: ${friendlyDate}`,
+      `Time: ${timeSlot}`,
+      `Device: ${deviceDisplay}`,
+      `Booking source: ${sourceLabel}`,
+    ].join("\n"),
   })
 }
 
@@ -257,7 +274,7 @@ async function sendMailInCustomerEmail(params: MailInEmailParams): Promise<void>
 }
 
 async function sendMailInStoreNotification(params: MailInEmailParams): Promise<void> {
-  const { customerName, email, phone, brand, modelName, issues, issueDescription, shippingAddress } = params
+  const { customerName, email, phone, brand, modelName, issues, issueDescription, shippingAddress, sourceLabel } = params
   const deviceDisplay = brand ? `${brand} ${modelName}` : modelName
   const returnAddress = formatAddress(shippingAddress)
 
@@ -295,8 +312,12 @@ async function sendMailInStoreNotification(params: MailInEmailParams): Promise<v
           <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(issueDescription)}</td>
         </tr>` : ""}
         <tr>
-          <td style="padding: 10px 0; color: #6b7280;">Return address</td>
-          <td style="padding: 10px 0; text-align: right; font-weight: 500;">${escapeHtml(returnAddress)}</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Return address</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500;">${escapeHtml(returnAddress)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; color: #6b7280;">Booking source</td>
+          <td style="padding: 10px 0; text-align: right; font-weight: 500;">${escapeHtml(sourceLabel)}</td>
         </tr>
       </table>
 
@@ -313,7 +334,7 @@ async function sendMailInStoreNotification(params: MailInEmailParams): Promise<v
     replyTo: email,
     subject,
     html,
-    text: `New mail-in request from ${customerName}\n\nPhone: ${phone}\nEmail: ${email}\nDevice: ${deviceDisplay}\nIssues: ${issues}\n${issueDescription ? `Description: ${issueDescription}\n` : ""}Return address: ${returnAddress}`,
+    text: `New mail-in request from ${customerName}\n\nPhone: ${phone}\nEmail: ${email}\nDevice: ${deviceDisplay}\nIssues: ${issues}\n${issueDescription ? `Description: ${issueDescription}\n` : ""}Return address: ${returnAddress}\nBooking source: ${sourceLabel}`,
   })
 }
 
