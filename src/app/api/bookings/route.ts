@@ -2,6 +2,7 @@ import { randomUUID } from "crypto"
 import { NextResponse } from "next/server"
 import { getCalendarClient } from "@/lib/google-calendar"
 import { sendConfirmationEmail } from "@/lib/send-confirmation-email"
+import { OFFER_CODE, OFFER_DISCOUNT, OFFER_TITLE, offerAppliesToBooking } from "@/lib/thanksgiving-offer"
 
 interface ShippingAddress {
   street: string
@@ -32,6 +33,19 @@ interface BookingPayload {
   timeSlot: string | null
   shippingAddress: ShippingAddress | null
   contact: ContactPayload
+  source?: unknown
+}
+
+/** Turns the ad labels into one short, safe line such as "facebook / paid_social". */
+function formatSource(raw: unknown): string {
+  if (!raw || typeof raw !== "object") return ""
+  const labels = raw as Record<string, unknown>
+  return ["source", "medium", "campaign", "content"]
+    .map((name) => labels[name])
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.replace(/[^\w.+ -]/g, "").trim().slice(0, 60))
+    .filter(Boolean)
+    .join(" / ")
 }
 
 function validateContact(c: unknown): c is ContactPayload {
@@ -146,6 +160,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const { date, timeSlot, category } = body
 
+  // Decided here on the server, so it cannot be changed from the browser.
+  const offerApplied = offerAppliesToBooking(date)
+  const offerLabel = offerApplied ? `${OFFER_TITLE}: ${OFFER_DISCOUNT} (${OFFER_CODE})` : undefined
+  const sourceLabel = formatSource(body.source)
+
   let times: { start: string; end: string }
   try {
     times = parseTimeSlot(date!, timeSlot!)
@@ -157,6 +176,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const { calendar, calendarId } = getCalendarClient()
 
     const description = [
+      offerLabel ? `OFFER — HONOR AT CHECKOUT: ${offerLabel}` : "",
       `Customer: ${customerName}`,
       `Phone: ${contact.phone}`,
       `Email: ${contact.email}`,
@@ -165,13 +185,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       `Issues: ${issuesText}`,
       issueDescription ? `Description: ${issueDescription}` : "",
       contact.notes ? `Notes: ${contact.notes}` : "",
+      sourceLabel ? `Booked from: ${sourceLabel}` : "",
     ].filter(Boolean).join("\n")
 
     const event = await calendar.events.insert({
       calendarId,
       sendUpdates: "all",
       requestBody: {
-        summary: `Repair: ${brand} ${modelName} — ${issuesText} (${customerName})`,
+        summary: `${offerApplied ? "$10 OFF · " : ""}Repair: ${brand} ${modelName} — ${issuesText} (${customerName})`,
         description,
         start: {
           dateTime: times.start,
@@ -197,6 +218,8 @@ export async function POST(request: Request): Promise<NextResponse> {
           brand,
           modelName,
           issues: issuesText,
+          offerLabel,
+          sourceLabel,
         })
       } catch (emailErr) {
         console.error("Failed to send confirmation email:", emailErr)
@@ -205,7 +228,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     // Random reference (no customer data) so the site can count this
     // booking in analytics exactly once.
-    return NextResponse.json({ success: true, bookingRef: randomUUID() })
+    return NextResponse.json({
+      success: true,
+      bookingRef: randomUUID(),
+      offer: { applied: offerApplied },
+    })
   } catch (err) {
     console.error("Google Calendar API error:", err)
     return NextResponse.json({ error: "Failed to create calendar event" }, { status: 500 })
