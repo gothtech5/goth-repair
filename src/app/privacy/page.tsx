@@ -39,6 +39,11 @@ export default function PrivacyPage() {
             ticked the optional box to receive news and offers from us.
           </p>
           <p className="mt-4">
+            If an ad or link brought you to our booking page, we save the name
+            of that ad or link with your booking, so we can apply any offer and
+            see where bookings come from.
+          </p>
+          <p className="mt-4">
             <strong>Information collected automatically.</strong> When you
             browse this website, we and the tools listed below may collect:
           </p>
