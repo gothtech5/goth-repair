@@ -25,6 +25,10 @@ interface WalkInEmailParams {
   brand: string
   modelName: string
   issues: string
+  /** Set when the booking earned a discount; shown to the customer and the store. */
+  offerLabel?: string
+  /** Which ad or link the booking came from; shown to the store only. */
+  sourceLabel?: string
 }
 
 interface MailInEmailParams {
@@ -65,7 +69,7 @@ export async function sendConfirmationEmail(params: ConfirmationEmailParams): Pr
 }
 
 async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<void> {
-  const { eventId, customerName, email, date, timeSlot, brand, modelName, issues } = params
+  const { eventId, customerName, email, date, timeSlot, brand, modelName, issues, offerLabel, sourceLabel } = params
 
   const cancelToken = createCancelToken(eventId)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://goth-repair.vercel.app"
@@ -107,6 +111,7 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
           <td style="padding: 10px 0; text-align: right; font-weight: 500;">${escapeHtml(timeSlot)}</td>
         </tr>
       </table>
+      ${offerLabel ? `<p style="margin: 20px 0 0; padding: 12px 14px; background: #fff5ea; border-radius: 8px; font-size: 14px; font-weight: 600; color: #4a2a10;">${escapeHtml(offerLabel)}. We'll take it off when you pay.</p>` : ""}
 
       <p style="margin: 32px 0 16px; font-size: 14px; color: #6b7280;">
         Need to cancel? Use the link below.
@@ -129,6 +134,7 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
     `Issues: ${issues}`,
     `Date: ${friendlyDate}`,
     `Time: ${timeSlot}`,
+    ...(offerLabel ? ["", `${offerLabel}. We'll take it off when you pay.`] : []),
     "",
     `Need to cancel? Visit: ${cancelUrl}`,
     "",
@@ -150,8 +156,17 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
     from: "bookings@gothtechnology.com",
     to: "gothtechnology5@gmail.com",
     replyTo: email,
-    subject: `New Walk-In Booking: ${customerName}`,
-    text: `New booking!\nName: ${customerName}\nEmail: ${email}\nDate: ${friendlyDate}\nTime: ${timeSlot}\nDevice: ${deviceDisplay}`,
+    subject: `${offerLabel ? "$10 OFF · " : ""}New Walk-In Booking: ${customerName}`,
+    text: [
+      "New booking!",
+      ...(offerLabel ? [`OFFER — HONOR AT CHECKOUT: ${offerLabel}`] : []),
+      `Name: ${customerName}`,
+      `Email: ${email}`,
+      `Date: ${friendlyDate}`,
+      `Time: ${timeSlot}`,
+      `Device: ${deviceDisplay}`,
+      ...(sourceLabel ? [`Booked from: ${sourceLabel}`] : []),
+    ].join("\n"),
   })
 }
 

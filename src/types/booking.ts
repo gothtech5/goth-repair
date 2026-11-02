@@ -86,7 +86,8 @@ export const INITIAL_STATE: BookingState = {
   modelId: null,
   issues: [],
   issueDescription: "",
-  repairType: null,
+  // Walk-in only for now. Set back to null to bring back the walk-in / mail-in choice.
+  repairType: "walk-in",
   date: null,
   timeSlot: null,
   shippingAddress: null,

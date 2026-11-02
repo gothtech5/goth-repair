@@ -23,7 +23,9 @@ import { ScheduleStep } from "./steps/schedule-step"
 import { ShippingStep } from "./steps/shipping-step"
 import { ContactStep } from "./steps/contact-step"
 import { ConfirmationStep } from "./steps/confirmation-step"
-import { HalloweenWideBanner } from "@/components/halloween/promo-banner"
+import { ThanksgivingBanner } from "@/components/thanksgiving/offer-banner"
+import { captureBookingSource, readBookingSource } from "@/lib/booking-source"
+import { OFFER_CODE } from "@/lib/thanksgiving-offer"
 
 const VALID_CATEGORIES: DeviceCategory[] = ["phone", "tablet", "computer"]
 
@@ -33,8 +35,11 @@ export function BookingWizard() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const submittingRef = useRef(false)
+  const [offerApplied, setOfferApplied] = useState(false)
 
   useEffect(() => {
+    captureBookingSource(new URLSearchParams(window.location.search))
+
     const category = searchParams.get("category") as DeviceCategory | null
     if (category && VALID_CATEGORIES.includes(category) && state.step === "device") {
       dispatch({ type: "SET_CATEGORY", payload: category })
@@ -81,6 +86,7 @@ export function BookingWizard() {
           timeSlot: state.timeSlot,
           shippingAddress: state.shippingAddress,
           contact,
+          source: readBookingSource(),
         }),
       })
 
@@ -89,14 +95,17 @@ export function BookingWizard() {
         throw new Error(data?.error ?? "Booking failed")
       }
 
+      const applied = data.offer?.applied === true
+      setOfferApplied(applied)
       dispatch({ type: "SET_CONTACT", payload: contact })
 
-      // The booking is saved and confirmed — count it once in Google
-      // Analytics (only if the visitor allowed analytics; no personal data).
+      // The booking is saved and confirmed — count it once in Google Analytics
+      // and the Meta Pixel (only with the visitor's permission; no personal data).
       if (typeof data.bookingRef === "string") {
         trackBookingLead(data.bookingRef, {
           repairType: state.repairType ?? "walk-in",
           deviceCategory: state.category ?? "unknown",
+          offerCode: applied ? OFFER_CODE : undefined,
         })
       }
     } catch (err) {
@@ -114,9 +123,7 @@ export function BookingWizard() {
   return (
     <div className="mx-auto max-w-[1120px] px-6 py-10 md:py-16">
       <ProgressBar currentStep={state.step} repairType={state.repairType} onStepClick={handleStepClick} />
-      {(state.step === "device" || state.step === "model" || state.step === "issue") && (
-        <HalloweenWideBanner className="mt-8" />
-      )}
+      {state.step !== "confirmation" && <ThanksgivingBanner date={state.date} className="mt-8" />}
       <div className={showSidebar ? "mt-10 grid gap-10 md:mt-14 lg:grid-cols-[1fr_300px]" : "mt-10 md:mt-14"}>
         <div>
           {state.step === "device" && (
@@ -159,7 +166,7 @@ export function BookingWizard() {
               onSelect={(date, timeSlot) =>
                 dispatch({ type: "SET_SCHEDULE", payload: { date, timeSlot } })
               }
-              onBack={() => dispatch({ type: "CLEAR_REPAIR_TYPE" })}
+              onBack={() => dispatch({ type: "GO_BACK" })}
             />
           )}
           {state.step === "schedule" && isMailIn && (
@@ -182,7 +189,11 @@ export function BookingWizard() {
           {state.step === "confirmation" && (
             <ConfirmationStep
               state={state}
-              onReset={() => dispatch({ type: "RESET" })}
+              offerApplied={offerApplied}
+              onReset={() => {
+                setOfferApplied(false)
+                dispatch({ type: "RESET" })
+              }}
             />
           )}
         </div>

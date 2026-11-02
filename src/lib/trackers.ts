@@ -161,30 +161,50 @@ function isGaDebug(): boolean {
 }
 
 /**
- * Reports one successful booking to Google Analytics as `generate_lead`.
+ * Reports one successful booking to Google Analytics (`generate_lead`) and
+ * the Meta Pixel (`Lead`).
  *
  * Call ONLY after the server has confirmed the booking was saved.
- * - Sends nothing unless the visitor allowed analytics cookies.
+ * - Each tool gets it only if the visitor allowed that tool's cookies.
  * - Sends each booking reference at most once (double clicks, re-renders,
  *   going back to the confirmation screen).
- * - Sends no personal details: only the repair type and device category.
+ * - Sends no personal details: only the repair type, device category and offer.
  */
 export function trackBookingLead(
   bookingRef: string,
-  details: { repairType: string; deviceCategory: string },
+  details: { repairType: string; deviceCategory: string; offerCode?: string },
 ): void {
   if (typeof window === "undefined" || !bookingRef) return
-  if (!started.analytics || !window.gtag) return
+  const sendToGoogle = started.analytics && !!window.gtag
+  const sendToMeta = started.pixel && !!window.fbq
+  if (!sendToGoogle && !sendToMeta) return
   if (leadAlreadySent(bookingRef)) return
   markLeadSent(bookingRef)
 
-  window.gtag("event", "generate_lead", {
-    send_to: GA_MEASUREMENT_ID,
-    lead_source: "online_booking",
-    repair_type: details.repairType,
-    device_category: details.deviceCategory,
-    ...(isGaDebug() ? { debug_mode: true } : {}),
-  })
+  if (sendToGoogle) {
+    window.gtag!("event", "generate_lead", {
+      send_to: GA_MEASUREMENT_ID,
+      lead_source: "online_booking",
+      repair_type: details.repairType,
+      device_category: details.deviceCategory,
+      ...(details.offerCode ? { offer_code: details.offerCode } : {}),
+      ...(isGaDebug() ? { debug_mode: true } : {}),
+    })
+  }
+
+  if (sendToMeta) {
+    // eventID lets Meta discard a repeat if this booking is ever reported twice.
+    window.fbq!(
+      "track",
+      "Lead",
+      {
+        content_name: "online_booking",
+        content_category: details.deviceCategory,
+        ...(details.offerCode ? { offer_code: details.offerCode } : {}),
+      },
+      { eventID: bookingRef },
+    )
+  }
 }
 
 /** Tells any tracker that is already running to stop using cookies. */
