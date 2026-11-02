@@ -9,7 +9,7 @@
 /** IDs of the tracking tools used on the public site. */
 export const GA_MEASUREMENT_ID = "G-50CTNL3LTG"
 export const GOOGLE_ADS_ID = "AW-5933503394"
-export const META_PIXEL_ID = "511183678414751"
+export const META_PIXEL_ID = "821483051008600"
 
 /** Name of the cookie that remembers the visitor's choice. */
 export const CONSENT_COOKIE = "gt_consent"
