@@ -1,7 +1,12 @@
 "use client"
 
-import { type FormEvent, useState, useRef } from "react"
+import { type FormEvent, useEffect, useState, useRef } from "react"
 import type { BookingState, ContactInfo } from "@/types/booking"
+import {
+  THANKSGIVING_DISCOUNT_LABEL,
+  isThanksgivingActive,
+  qualifiesForThanksgiving,
+} from "@/lib/thanksgiving"
 
 interface ContactStepProps {
   state: BookingState
@@ -14,6 +19,18 @@ interface ContactStepProps {
 export function ContactStep({ state, onSubmit, onBack, submitting, submitError }: ContactStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const formRef = useRef<HTMLFormElement>(null)
+  // Worked out after the page opens, so the page's pre-built HTML stays the same.
+  const [offerNote, setOfferNote] = useState<string | null>(null)
+  useEffect(() => {
+    if (!isThanksgivingActive()) return
+    setOfferNote(
+      qualifiesForThanksgiving({ repairType: state.repairType, date: state.date })
+        ? `${THANKSGIVING_DISCOUNT_LABEL} will be applied to this booking.`
+        : state.repairType === "mail-in"
+          ? "The Thanksgiving $10 offer is for walk-in appointments only."
+          : "The Thanksgiving $10 offer is for appointments by November 30, 2026.",
+    )
+  }, [state.repairType, state.date])
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -55,6 +72,11 @@ export function ContactStep({ state, onSubmit, onBack, submitting, submitError }
           ? "We'll use this to coordinate your mail-in repair. No payment until after the repair."
           : "We'll use this to confirm your appointment. No payment until after the repair."}
       </p>
+      {offerNote && (
+        <p className="mt-4 max-w-lg rounded-lg border border-[#e7c9a3] bg-[#fdf3e4] px-3 py-2.5 text-sm font-medium text-[#4a2c12]">
+          {offerNote}
+        </p>
+      )}
 
       <form id="contact-form" ref={formRef} onSubmit={handleSubmit} className="mt-8 max-w-lg space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
