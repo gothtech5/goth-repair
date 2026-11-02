@@ -2,6 +2,7 @@
 
 import { useReducer, useEffect, useRef, useState } from "react"
 import { trackBookingLead } from "@/lib/trackers"
+import { captureBookingSource, readBookingSource } from "@/lib/attribution"
 import { useSearchParams } from "next/navigation"
 import { DEVICE_MODELS, BRANDS, REPAIR_ISSUES } from "@/data/devices"
 import { MapPin, Truck } from "lucide-react"
@@ -23,7 +24,7 @@ import { ScheduleStep } from "./steps/schedule-step"
 import { ShippingStep } from "./steps/shipping-step"
 import { ContactStep } from "./steps/contact-step"
 import { ConfirmationStep } from "./steps/confirmation-step"
-import { HalloweenWideBanner } from "@/components/halloween/promo-banner"
+import { ThanksgivingWideBanner } from "@/components/thanksgiving/promo-banner"
 
 const VALID_CATEGORIES: DeviceCategory[] = ["phone", "tablet", "computer"]
 
@@ -32,9 +33,12 @@ export function BookingWizard() {
   const [state, dispatch] = useReducer(bookingReducer, INITIAL_STATE)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [discountApplied, setDiscountApplied] = useState(false)
   const submittingRef = useRef(false)
 
   useEffect(() => {
+    captureBookingSource()
+
     const category = searchParams.get("category") as DeviceCategory | null
     if (category && VALID_CATEGORIES.includes(category) && state.step === "device") {
       dispatch({ type: "SET_CATEGORY", payload: category })
@@ -81,6 +85,7 @@ export function BookingWizard() {
           timeSlot: state.timeSlot,
           shippingAddress: state.shippingAddress,
           contact,
+          bookingSource: readBookingSource(),
         }),
       })
 
@@ -89,6 +94,7 @@ export function BookingWizard() {
         throw new Error(data?.error ?? "Booking failed")
       }
 
+      setDiscountApplied(data.discountApplied === true)
       dispatch({ type: "SET_CONTACT", payload: contact })
 
       // The booking is saved and confirmed — count it once in Google
@@ -115,7 +121,7 @@ export function BookingWizard() {
     <div className="mx-auto max-w-[1120px] px-6 py-10 md:py-16">
       <ProgressBar currentStep={state.step} repairType={state.repairType} onStepClick={handleStepClick} />
       {(state.step === "device" || state.step === "model" || state.step === "issue") && (
-        <HalloweenWideBanner className="mt-8" />
+        <ThanksgivingWideBanner className="mt-8" />
       )}
       <div className={showSidebar ? "mt-10 grid gap-10 md:mt-14 lg:grid-cols-[1fr_300px]" : "mt-10 md:mt-14"}>
         <div>
@@ -182,6 +188,7 @@ export function BookingWizard() {
           {state.step === "confirmation" && (
             <ConfirmationStep
               state={state}
+              discountApplied={discountApplied}
               onReset={() => dispatch({ type: "RESET" })}
             />
           )}
