@@ -120,26 +120,27 @@ export function applyTrackers(choice: ConsentChoice): void {
   if (choice.advertising) startMetaPixel()
 }
 
-/** Remembers which bookings were already reported, so each is counted once. */
-const LEAD_SENT_KEY = "gt_leads_sent"
+/** Remembers which bookings each tool was told about, so each is counted once per tool. */
+const GOOGLE_LEADS_KEY = "gt_leads_sent"
+const META_LEADS_KEY = "gt_meta_leads_sent"
 const leadsSentThisPage = new Set<string>()
 
-function leadAlreadySent(bookingRef: string): boolean {
-  if (leadsSentThisPage.has(bookingRef)) return true
+function leadAlreadySent(storageKey: string, bookingRef: string): boolean {
+  if (leadsSentThisPage.has(`${storageKey}:${bookingRef}`)) return true
   try {
-    const list = JSON.parse(window.localStorage.getItem(LEAD_SENT_KEY) ?? "[]")
+    const list = JSON.parse(window.localStorage.getItem(storageKey) ?? "[]")
     return Array.isArray(list) && list.includes(bookingRef)
   } catch {
     return false
   }
 }
 
-function markLeadSent(bookingRef: string): void {
-  leadsSentThisPage.add(bookingRef)
+function markLeadSent(storageKey: string, bookingRef: string): void {
+  leadsSentThisPage.add(`${storageKey}:${bookingRef}`)
   try {
-    const list = JSON.parse(window.localStorage.getItem(LEAD_SENT_KEY) ?? "[]")
+    const list = JSON.parse(window.localStorage.getItem(storageKey) ?? "[]")
     const next = (Array.isArray(list) ? list : []).concat(bookingRef).slice(-20)
-    window.localStorage.setItem(LEAD_SENT_KEY, JSON.stringify(next))
+    window.localStorage.setItem(storageKey, JSON.stringify(next))
   } catch {
     // Storage blocked (private mode etc.) — the in-page guard still applies.
   }
@@ -161,12 +162,14 @@ function isGaDebug(): boolean {
 }
 
 /**
- * Reports one successful booking to Google Analytics as `generate_lead`.
+ * Reports one successful booking to Google Analytics as `generate_lead` and
+ * to the Meta Pixel as `Lead`.
  *
  * Call ONLY after the server has confirmed the booking was saved.
- * - Sends nothing unless the visitor allowed analytics cookies.
- * - Sends each booking reference at most once (double clicks, re-renders,
- *   going back to the confirmation screen).
+ * - Each tool sends nothing unless the visitor allowed its cookies
+ *   (analytics for Google Analytics, advertising for the Meta Pixel).
+ * - Each tool sends a booking reference at most once (double clicks,
+ *   re-renders, going back to the confirmation screen).
  * - Sends no personal details: only the repair type and device category.
  */
 export function trackBookingLead(
@@ -174,17 +177,27 @@ export function trackBookingLead(
   details: { repairType: string; deviceCategory: string },
 ): void {
   if (typeof window === "undefined" || !bookingRef) return
-  if (!started.analytics || !window.gtag) return
-  if (leadAlreadySent(bookingRef)) return
-  markLeadSent(bookingRef)
 
-  window.gtag("event", "generate_lead", {
-    send_to: GA_MEASUREMENT_ID,
-    lead_source: "online_booking",
-    repair_type: details.repairType,
-    device_category: details.deviceCategory,
-    ...(isGaDebug() ? { debug_mode: true } : {}),
-  })
+  if (started.analytics && window.gtag && !leadAlreadySent(GOOGLE_LEADS_KEY, bookingRef)) {
+    markLeadSent(GOOGLE_LEADS_KEY, bookingRef)
+    window.gtag("event", "generate_lead", {
+      send_to: GA_MEASUREMENT_ID,
+      lead_source: "online_booking",
+      repair_type: details.repairType,
+      device_category: details.deviceCategory,
+      ...(isGaDebug() ? { debug_mode: true } : {}),
+    })
+  }
+
+  if (started.pixel && window.fbq && !leadAlreadySent(META_LEADS_KEY, bookingRef)) {
+    markLeadSent(META_LEADS_KEY, bookingRef)
+    window.fbq(
+      "track",
+      "Lead",
+      { content_name: details.repairType, content_category: details.deviceCategory },
+      { eventID: bookingRef },
+    )
+  }
 }
 
 /** Tells any tracker that is already running to stop using cookies. */
