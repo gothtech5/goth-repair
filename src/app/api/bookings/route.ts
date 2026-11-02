@@ -2,6 +2,11 @@ import { randomUUID } from "crypto"
 import { NextResponse } from "next/server"
 import { getCalendarClient } from "@/lib/google-calendar"
 import { sendConfirmationEmail } from "@/lib/send-confirmation-email"
+import {
+  THANKSGIVING_CODE,
+  THANKSGIVING_DISCOUNT_LABEL,
+  qualifiesForThanksgiving,
+} from "@/lib/thanksgiving"
 
 interface ShippingAddress {
   street: string
@@ -32,6 +37,17 @@ interface BookingPayload {
   timeSlot: string | null
   shippingAddress: ShippingAddress | null
   contact: ContactPayload
+  bookingSource?: unknown
+}
+
+/** Turns the tracking details sent by the browser into a short, safe label. */
+function formatBookingSource(raw: unknown): string {
+  if (!raw || typeof raw !== "object") return "Direct or unknown"
+  const source = raw as Record<string, unknown>
+  const parts = [source.source, source.medium, source.campaign, source.content]
+    .map((part) => (typeof part === "string" ? part.replace(/[^\w .-]/g, "").trim().slice(0, 60) : ""))
+    .filter(Boolean)
+  return parts.length > 0 ? parts.join(" / ") : "Direct or unknown"
 }
 
 function validateContact(c: unknown): c is ContactPayload {
@@ -120,6 +136,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const { contact, brand, modelName, issues, issueDescription, repairType } = body
   const customerName = `${contact.firstName} ${contact.lastName}`
   const issuesText = issues.join(", ")
+  const sourceLabel = formatBookingSource(body.bookingSource)
 
   if (repairType === "mail-in") {
     try {
@@ -133,11 +150,12 @@ export async function POST(request: Request): Promise<NextResponse> {
         issues: issuesText,
         issueDescription,
         shippingAddress: body.shippingAddress!,
+        sourceLabel,
       })
 
       // Random reference (no customer data) so the site can count this
       // booking in analytics exactly once.
-      return NextResponse.json({ success: true, bookingRef: randomUUID() })
+      return NextResponse.json({ success: true, bookingRef: randomUUID(), discountApplied: false })
     } catch (err) {
       console.error("Mail-in email error:", err)
       return NextResponse.json({ error: "Failed to process mail-in request" }, { status: 500 })
@@ -153,10 +171,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid date or time" }, { status: 400 })
   }
 
+  // Decided here, not in the browser, so the record can be trusted at the counter.
+  const discountApplied = qualifiesForThanksgiving({ repairType, date })
+
   try {
     const { calendar, calendarId } = getCalendarClient()
 
     const description = [
+      discountApplied ? `DISCOUNT: ${THANKSGIVING_DISCOUNT_LABEL} [${THANKSGIVING_CODE}]` : "",
       `Customer: ${customerName}`,
       `Phone: ${contact.phone}`,
       `Email: ${contact.email}`,
@@ -165,13 +187,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       `Issues: ${issuesText}`,
       issueDescription ? `Description: ${issueDescription}` : "",
       contact.notes ? `Notes: ${contact.notes}` : "",
+      `Booking source: ${sourceLabel}`,
     ].filter(Boolean).join("\n")
 
     const event = await calendar.events.insert({
       calendarId,
       sendUpdates: "all",
       requestBody: {
-        summary: `Repair: ${brand} ${modelName} — ${issuesText} (${customerName})`,
+        summary: `${discountApplied ? "$10 OFF - " : ""}Repair: ${brand} ${modelName} — ${issuesText} (${customerName})`,
         description,
         start: {
           dateTime: times.start,
@@ -197,6 +220,8 @@ export async function POST(request: Request): Promise<NextResponse> {
           brand,
           modelName,
           issues: issuesText,
+          discountLabel: discountApplied ? THANKSGIVING_DISCOUNT_LABEL : null,
+          sourceLabel,
         })
       } catch (emailErr) {
         console.error("Failed to send confirmation email:", emailErr)
@@ -205,7 +230,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     // Random reference (no customer data) so the site can count this
     // booking in analytics exactly once.
-    return NextResponse.json({ success: true, bookingRef: randomUUID() })
+    return NextResponse.json({ success: true, bookingRef: randomUUID(), discountApplied })
   } catch (err) {
     console.error("Google Calendar API error:", err)
     return NextResponse.json({ error: "Failed to create calendar event" }, { status: 500 })
