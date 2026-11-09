@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 
 const LINKS = [
   { href: "/evertrail", label: "Home" },
+  { href: "/evertrail/tickets", label: "Repair tickets" },
   { href: "/evertrail/products", label: "Products" },
   { href: "/evertrail/labels", label: "Labels" },
   { href: "/evertrail/scan", label: "Scan" },
