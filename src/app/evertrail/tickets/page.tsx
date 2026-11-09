@@ -2,7 +2,7 @@ import Link from "next/link"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { friendlyError, type Row } from "@/lib/evertrail/db"
 import { dollars, one, type Search } from "@/lib/evertrail/format"
-import { niceDate, searchTickets } from "@/lib/evertrail/tickets"
+import { balanceCents, niceDate, searchTickets } from "@/lib/evertrail/tickets"
 import { TICKET_STATUSES } from "@/lib/evertrail/ticket-info"
 import { StatusBadge } from "@/components/evertrail/status-badge"
 import { Shell, buttonClass, inputClass, linkClass } from "@/components/evertrail/shell"
@@ -88,7 +88,10 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
                   </Link>
                 </td>
                 <td className="py-3 pr-3 font-medium">{t.customer_name}</td>
-                <td className="py-3 pr-3 whitespace-nowrap">{t.customer_phone}</td>
+                <td className="py-3 pr-3 whitespace-nowrap">
+                  {t.customer_phone}
+                  {t.alt_phone ? <span className="block text-xs text-neutral-600">alt {t.alt_phone}</span> : null}
+                </td>
                 <td className="py-3 pr-3">
                   {t.device_brand} {t.device_model}
                 </td>
@@ -98,7 +101,7 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
                 <td className="py-3 pr-3 whitespace-nowrap">{niceDate(t.date_received)}</td>
                 <td className="py-3 pr-3 whitespace-nowrap">{niceDate(t.estimated_completion) || "-"}</td>
                 <td className="py-3 pr-3 text-right whitespace-nowrap">
-                  ${dollars(Number(t.price_cents ?? 0) - Number(t.deposit_cents ?? 0))}
+                  ${dollars(balanceCents(t))}
                 </td>
               </tr>
             ))}
