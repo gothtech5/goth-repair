@@ -6,6 +6,7 @@ import { Shell } from "@/components/evertrail/shell"
 export const dynamic = "force-dynamic"
 
 const CARDS = [
+  { href: "/evertrail/tickets", title: "Repair tickets", text: "Check in repairs, track status, and print customer tickets." },
   { href: "/evertrail/products", title: "Products", text: "Add products and set prices, barcodes and stock." },
   { href: "/evertrail/categories", title: "Categories", text: "Group products into categories and sub-categories." },
   { href: "/evertrail/labels", title: "Labels", text: "Print barcode labels on the DYMO printer." },

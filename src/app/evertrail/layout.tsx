@@ -1,7 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createHash } from "crypto";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
+
+// Staff-only pages (including repair tickets): keep them out of Google and other search engines.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 function tokenFor(password: string) {
   return createHash("sha256").update("evertrail:" + password).digest("hex");
