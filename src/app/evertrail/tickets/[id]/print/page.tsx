@@ -2,7 +2,7 @@ import Link from "next/link"
 import { requireAuth } from "@/lib/evertrail/auth"
 import { friendlyError, type Row } from "@/lib/evertrail/db"
 import { dollars, one, type Search } from "@/lib/evertrail/format"
-import { loadTicket, niceDate } from "@/lib/evertrail/tickets"
+import { balanceCents, loadTicket, niceDate } from "@/lib/evertrail/tickets"
 import { SHOP } from "@/lib/evertrail/ticket-info"
 import { linkClass } from "@/components/evertrail/shell"
 import { PrintButton } from "@/components/evertrail/print-button"
@@ -46,6 +46,7 @@ export default async function PrintTicketPage({
 
   const price = Number(t.price_cents ?? 0)
   const deposit = Number(t.deposit_cents ?? 0)
+  const paid = Number(t.paid_cents ?? 0)
 
   return (
     <div className="min-h-screen bg-neutral-100 py-6 text-black print:min-h-0 print:bg-white print:py-0">
@@ -96,6 +97,7 @@ export default async function PrintTicketPage({
             </h2>
             <p className="font-medium">{t.customer_name}</p>
             <p className="text-sm">{t.customer_phone}</p>
+            {t.alt_phone ? <p className="text-sm">Alternate: {t.alt_phone}</p> : null}
           </div>
           <div>
             <h2 className="mb-2 border-b border-neutral-300 pb-1 text-xs font-semibold uppercase tracking-wider text-neutral-600">
@@ -135,9 +137,15 @@ export default async function PrintTicketPage({
                 <td className="py-1 text-neutral-700">Deposit paid</td>
                 <td className="py-1 text-right">−${dollars(deposit)}</td>
               </tr>
+              {paid > 0 ? (
+                <tr>
+                  <td className="py-1 text-neutral-700">Paid at pickup</td>
+                  <td className="py-1 text-right">−${dollars(paid)}</td>
+                </tr>
+              ) : null}
               <tr className="border-t-2 border-black">
                 <td className="py-2 font-bold">Remaining balance</td>
-                <td className="py-2 text-right text-lg font-bold">${dollars(price - deposit)}</td>
+                <td className="py-2 text-right text-lg font-bold">${dollars(balanceCents(t))}</td>
               </tr>
             </tbody>
           </table>
