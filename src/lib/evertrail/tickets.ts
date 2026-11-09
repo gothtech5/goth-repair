@@ -50,6 +50,14 @@ async function createSchema() {
        updated_at timestamptz not null default now()
      )`,
     `create index if not exists repair_tickets_created_idx on repair_tickets (created_at desc)`,
+    // Added later: a second number to reach the customer (their own phone may be the one being repaired),
+    // their permission to be texted and which number to text, and what was paid at pickup.
+    `alter table repair_tickets add column if not exists alt_phone text not null default ''`,
+    `alter table repair_tickets add column if not exists text_ok boolean not null default false`,
+    `alter table repair_tickets add column if not exists text_to text not null default 'main'`,
+    `alter table repair_tickets add column if not exists paid_cents integer not null default 0`,
+    `alter table repair_tickets add column if not exists payment_notes text not null default ''`,
+    `alter table repair_tickets add column if not exists collected_at timestamptz`,
   ]
   for (const statement of statements) {
     try {
@@ -76,6 +84,9 @@ export type TicketInput = {
   estimated_completion: string | null
   status: TicketStatus
   technician_notes: string
+  alt_phone: string
+  text_ok: boolean
+  text_to: "main" | "alt"
 }
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -102,12 +113,19 @@ export function readTicketForm(formData: FormData): { ticket: TicketInput; error
     estimated_completion: DATE.test(estimate) ? estimate : null,
     status,
     technician_notes: text(formData.get("technician_notes")),
+    alt_phone: text(formData.get("alt_phone")),
+    text_ok: formData.get("text_ok") === "on",
+    text_to: text(formData.get("text_to")) === "alt" ? "alt" : "main",
   }
 
   const phoneDigits = ticket.customer_phone.replace(/\D/g, "")
   let error = ""
   if (!ticket.customer_name) error = "Customer name is required."
   else if (phoneDigits.length < 7) error = "Enter the customer's phone number (at least 7 digits)."
+  else if (ticket.alt_phone && ticket.alt_phone.replace(/\D/g, "").length < 7)
+    error = "The alternate contact number needs at least 7 digits (or leave it blank)."
+  else if (ticket.text_ok && ticket.text_to === "alt" && !ticket.alt_phone)
+    error = "Enter the alternate number, or choose to text the main number."
   else if (!ticket.device_brand || !ticket.device_model) error = "Device brand and model are required."
   else if (!ticket.issue) error = "Describe the repair issue."
   else if (!ticket.date_received) error = "Enter the date received."
@@ -118,7 +136,7 @@ export function readTicketForm(formData: FormData): { ticket: TicketInput; error
   return { ticket, error }
 }
 
-/** The values in the order the insert and update statements below expect them ($1 ... $12). */
+/** The values in the order the insert and update statements below expect them ($1 ... $15). */
 function values(t: TicketInput) {
   return [
     t.customer_name,
@@ -133,6 +151,9 @@ function values(t: TicketInput) {
     t.estimated_completion,
     t.status,
     t.technician_notes,
+    t.alt_phone,
+    t.text_ok ? "true" : "false",
+    t.text_to,
   ]
 }
 
@@ -142,8 +163,10 @@ export async function createTicket(t: TicketInput): Promise<{ id: string; ticket
   const rows = await sql(
     `insert into repair_tickets
             (customer_name, customer_phone, device_brand, device_model, issue, device_condition,
-             price_cents, deposit_cents, date_received, estimated_completion, status, technician_notes)
-     values ($1, $2, $3, $4, $5, $6, $7::int, $8::int, $9::date, $10::date, $11, $12)
+             price_cents, deposit_cents, date_received, estimated_completion, status, technician_notes,
+             alt_phone, text_ok, text_to, collected_at)
+     values ($1, $2, $3, $4, $5, $6, $7::int, $8::int, $9::date, $10::date, $11, $12, $13, $14::boolean, $15,
+             case when $11 = 'Collected' then now() end)
      returning id, ticket_number`,
     values(t)
   )
@@ -157,7 +180,10 @@ export async function updateTicket(id: number, t: TicketInput): Promise<string |
     `update repair_tickets
         set customer_name = $2, customer_phone = $3, device_brand = $4, device_model = $5, issue = $6,
             device_condition = $7, price_cents = $8::int, deposit_cents = $9::int, date_received = $10::date,
-            estimated_completion = $11::date, status = $12, technician_notes = $13, updated_at = now()
+            estimated_completion = $11::date, status = $12, technician_notes = $13,
+            alt_phone = $14, text_ok = $15::boolean, text_to = $16,
+            collected_at = case when $12 = 'Collected' then coalesce(collected_at, now()) end,
+            updated_at = now()
       where id = $1
       returning ticket_number`,
     [id, ...values(t)]
@@ -172,7 +198,8 @@ export async function loadTicket(id: string): Promise<Row | undefined> {
   const rows = await sql(
     `select *,
             to_char(created_at at time zone 'America/Chicago', 'Mon FMDD, YYYY FMHH12:MI AM') as created_text,
-            to_char(updated_at at time zone 'America/Chicago', 'Mon FMDD, YYYY FMHH12:MI AM') as updated_text
+            to_char(updated_at at time zone 'America/Chicago', 'Mon FMDD, YYYY FMHH12:MI AM') as updated_text,
+            to_char(collected_at at time zone 'America/Chicago', 'Mon FMDD, YYYY FMHH12:MI AM') as collected_text
        from repair_tickets where id = $1`,
     [id]
   )
@@ -180,7 +207,7 @@ export async function loadTicket(id: string): Promise<Row | undefined> {
 }
 
 /**
- * Finds tickets by customer name, phone number or ticket number.
+ * Finds tickets by customer name, phone number (main or alternate) or ticket number.
  * Phone and ticket numbers match on their digits, so "612-987-8107", "6129878107",
  * "GT-01001" and "1001" all work. Newest tickets first.
  */
@@ -196,11 +223,61 @@ export async function searchTickets(query: string, status: string): Promise<Row[
              or customer_name ilike '%' || $1::text || '%'
              or ticket_number ilike '%' || $1::text || '%'
              or ($2::text <> '' and regexp_replace(customer_phone, '[^0-9]', '', 'g') like '%' || $2::text || '%')
+             or ($2::text <> '' and regexp_replace(alt_phone, '[^0-9]', '', 'g') like '%' || $2::text || '%')
              or ($2::text <> '' and ltrim(regexp_replace(ticket_number, '[^0-9]', '', 'g'), '0') = ltrim($2::text, '0')))
       order by created_at desc
       limit 300`,
     [q, digits, statusFilter]
   )
+}
+
+/** What is still owed: estimated price minus the deposit and anything paid at pickup. Never below 0. */
+export function balanceCents(t: Row): number {
+  return Math.max(0, Number(t.price_cents ?? 0) - Number(t.deposit_cents ?? 0) - Number(t.paid_cents ?? 0))
+}
+
+/**
+ * Records money taken at pickup (through Square or another way) against a ticket.
+ * `reference` is kept with the ticket, e.g. "Square order abc123" or "Cash".
+ * Gives back the ticket number, or null if the ticket no longer exists.
+ */
+export async function recordPayment(id: number, cents: number, reference: string): Promise<string | null> {
+  await ensureTicketSchema()
+  const rows = await sql(
+    `update repair_tickets
+        set paid_cents = paid_cents + $2::int,
+            payment_notes = trim(both chr(10) from payment_notes || chr(10) || $3::text),
+            updated_at = now()
+      where id = $1
+      returning ticket_number`,
+    [id, cents, reference]
+  )
+  return rows[0]?.ticket_number ?? null
+}
+
+/** True when this Square payment was already recorded on the ticket (the return page was opened twice). */
+export async function paymentAlreadyRecorded(id: number, squareId: string): Promise<boolean> {
+  await ensureTicketSchema()
+  const rows = await sql(`select 1 from repair_tickets where id = $1 and position($2::text in payment_notes) > 0`, [
+    id,
+    squareId,
+  ])
+  return rows.length > 0
+}
+
+/** Sets just the status (and the collected time when it becomes Collected). Gives back the ticket number. */
+export async function setStatus(id: number, status: TicketStatus): Promise<string | null> {
+  await ensureTicketSchema()
+  const rows = await sql(
+    `update repair_tickets
+        set status = $2,
+            collected_at = case when $2 = 'Collected' then coalesce(collected_at, now()) end,
+            updated_at = now()
+      where id = $1
+      returning ticket_number`,
+    [id, status]
+  )
+  return rows[0]?.ticket_number ?? null
 }
 
 /** "2026-11-08" -> "Nov 8, 2026". Blank stays blank. */
