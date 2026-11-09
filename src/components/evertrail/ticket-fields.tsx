@@ -18,6 +18,9 @@ export type TicketDefaults = {
   estimated_completion?: string
   status?: string
   technician_notes?: string
+  alt_phone?: string
+  text_ok?: boolean
+  text_to?: string
 }
 
 const BRANDS = ["Apple", "Samsung", "Google", "Motorola", "OnePlus", "LG", "Microsoft", "Lenovo", "Other"]
@@ -61,6 +64,33 @@ export function TicketFields({ ticket = {} }: { ticket?: TicketDefaults }) {
             className={inputClass}
           />
         </Field>
+        <Field label="Alternate contact number (optional)">
+          <input
+            name="alt_phone"
+            type="tel"
+            inputMode="tel"
+            defaultValue={ticket.alt_phone}
+            placeholder="Family, work or friend's number"
+            autoComplete="off"
+            className={inputClass}
+          />
+          <span className="mt-1 block text-xs font-normal text-neutral-600">
+            Useful when the phone being repaired is their only phone.
+          </span>
+        </Field>
+        <div className="space-y-2 rounded-md border border-neutral-300 bg-neutral-50 p-3 text-sm">
+          <label className="flex items-start gap-2 font-medium">
+            <input name="text_ok" type="checkbox" defaultChecked={ticket.text_ok} className="mt-1 size-4" />
+            <span>Customer agrees to receive texts about this repair</span>
+          </label>
+          <label className="block">
+            <span className="mb-1 block font-medium">Text this number</span>
+            <select name="text_to" defaultValue={ticket.text_to === "alt" ? "alt" : "main"} className={inputClass}>
+              <option value="main">Main phone number</option>
+              <option value="alt">Alternate contact number</option>
+            </select>
+          </label>
+        </div>
       </fieldset>
 
       <fieldset className="grid gap-3 sm:grid-cols-2">
