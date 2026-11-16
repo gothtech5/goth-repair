@@ -7,6 +7,22 @@ function getResendClient(): Resend {
   return new Resend(apiKey)
 }
 
+type SendArgs = Parameters<Resend["emails"]["send"]>[0]
+
+/**
+ * Resend does not throw when an email is refused (bad key, unverified
+ * domain, quota). It returns { error } instead. This turns that into a
+ * real error with a clear log line, so a failure is never silent.
+ */
+async function sendEmail(resend: Resend, label: string, args: SendArgs): Promise<void> {
+  const { data, error } = await resend.emails.send(args)
+  if (error) {
+    console.error(`[email] ${label} FAILED:`, JSON.stringify(error))
+    throw new Error(`${label} failed: ${error.message}`)
+  }
+  console.log(`[email] ${label} sent, id ${data?.id ?? "unknown"}`)
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -142,32 +158,41 @@ async function sendWalkInConfirmationEmail(params: WalkInEmailParams): Promise<v
   ].join("\n")
 
   const resend = getResendClient()
-  await resend.emails.send({
-    from: "bookings@gothtechnology.com",
-    to: email,
-    replyTo: "gothtechnology5@gmail.com",
-    subject,
-    html,
-    text,
-  })
 
-  // Send store notification
-  await resend.emails.send({
-    from: "bookings@gothtechnology.com",
-    to: "gothtechnology5@gmail.com",
-    replyTo: email,
-    subject: `${offerLabel ? "$10 OFF · " : ""}New Walk-In Booking: ${customerName}`,
-    text: [
-      "New booking!",
-      ...(offerLabel ? [`OFFER — HONOR AT CHECKOUT: ${offerLabel}`] : []),
-      `Name: ${customerName}`,
-      `Email: ${email}`,
-      `Date: ${friendlyDate}`,
-      `Time: ${timeSlot}`,
-      `Device: ${deviceDisplay}`,
-      ...(sourceLabel ? [`Booked from: ${sourceLabel}`] : []),
-    ].join("\n"),
-  })
+  // Each email is sent on its own, so if one fails the other still goes out.
+  const results = await Promise.allSettled([
+    // Store notification
+    sendEmail(resend, "Store notification", {
+      from: "bookings@gothtechnology.com",
+      to: "gothtechnology5@gmail.com",
+      replyTo: email,
+      subject: `${offerLabel ? "$10 OFF · " : ""}New Walk-In Booking: ${customerName}`,
+      text: [
+        "New booking!",
+        ...(offerLabel ? [`OFFER — HONOR AT CHECKOUT: ${offerLabel}`] : []),
+        `Name: ${customerName}`,
+        `Email: ${email}`,
+        `Date: ${friendlyDate}`,
+        `Time: ${timeSlot}`,
+        `Device: ${deviceDisplay}`,
+        ...(sourceLabel ? [`Booked from: ${sourceLabel}`] : []),
+      ].join("\n"),
+    }),
+    // Customer confirmation
+    sendEmail(resend, "Customer confirmation", {
+      from: "bookings@gothtechnology.com",
+      to: email,
+      replyTo: "gothtechnology5@gmail.com",
+      subject,
+      html,
+      text,
+    }),
+  ])
+
+  const failed = results.filter((r): r is PromiseRejectedResult => r.status === "rejected")
+  if (failed.length > 0) {
+    throw new Error(failed.map((r) => String(r.reason)).join(" | "))
+  }
 }
 
 async function sendMailInCustomerEmail(params: MailInEmailParams): Promise<void> {
@@ -261,7 +286,7 @@ async function sendMailInCustomerEmail(params: MailInEmailParams): Promise<void>
   ].join("\n")
 
   const resend = getResendClient()
-  await resend.emails.send({
+  await sendEmail(resend, "Mail-in customer confirmation", {
     from: "bookings@gothtechnology.com",
     to: email,
     replyTo: "gothtechnology5@gmail.com",
@@ -322,7 +347,7 @@ async function sendMailInStoreNotification(params: MailInEmailParams): Promise<v
   `.trim()
 
   const resend = getResendClient()
-  await resend.emails.send({
+  await sendEmail(resend, "Mail-in store notification", {
     from: "bookings@gothtechnology.com",
     to: "gothtechnology5@gmail.com",
     replyTo: email,
